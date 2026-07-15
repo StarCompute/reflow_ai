@@ -128,6 +128,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   .links a{color:var(--accent);margin-right:16px;}
   code{background:var(--code);padding:2px 6px;border-radius:5px;}
   .muted{color:#57606a;font-size:13px;}
+  details.tech{background:#f0f6ff;border:1px solid #bcd4f6;border-radius:10px;padding:14px 18px;margin:18px 0;}
+  details.tech summary{font-weight:700;cursor:pointer;color:var(--accent);font-size:15px;}
+  details.tech table{margin:12px 0;}
+  details.tech th{background:#e3edfb;white-space:nowrap;}
+  details.tech .flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0;font-size:14px;}
+  details.tech .flow b{background:#fff;border:1px solid #bcd4f6;border-radius:8px;padding:6px 12px;}
+  details.tech .flow span{color:var(--accent);font-weight:700;}
 </style>
 </head>
 <body>
@@ -144,6 +151,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <?php if (file_exists($resultFile)): ?><a href="recommend_result.csv" download>下载推荐结果 recommend_result.csv</a><?php endif; ?>
     </p>
   </div>
+
+  <details class="tech">
+    <summary>它背后是什么算法？（点击展开技术说明）</summary>
+    <p>本系统在工业上称为 <strong>「受控工艺参数推荐」（Controlled Process Parameter Recommendation）</strong>，
+       核心算法是 <strong>贝叶斯优化（Bayesian Optimization, BO）</strong>——自实现的 <strong>GP + UCB</strong>（高斯过程代理模型 + 上置信界采集函数）。</p>
+    <div class="flow">
+      <b>历史数据</b><span>→</span><b>代理模型（学参数↔质量规律）</b><span>→</span><b>贝叶斯优化（寻最优）</b><span>→</span><b>推荐参数</b>
+    </div>
+    <table>
+      <thead><tr><th>维度</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td>核心算法</td><td>贝叶斯优化 BO（GP + UCB）</td></tr>
+        <tr><td>模型层</td><td>代理模型 + 质量模型 + 推荐引擎（BO + 离散枚举）</td></tr>
+        <tr><td>问题本质</td><td>黑盒/灰盒工艺参数寻优（无解析式，从数据学规律反求最优旋钮）</td></tr>
+        <tr><td>工业别名</td><td>工艺参数优化、参数寻优、实验设计 DOE、代理模型辅助优化</td></tr>
+      </tbody>
+    </table>
+    <p class="muted">连续旋钮走 BO 序贯寻优；离散旋钮走枚举择优。已在回流焊、注塑、冶炼等真实产线验证。</p>
+  </details>
 
   <?php if ($msg): ?>
     <div class="msg <?php echo (strpos($msg,'失败')===0)?'err':''; ?>"><?php echo $msg; ?></div>
