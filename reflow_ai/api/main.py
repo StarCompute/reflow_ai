@@ -1,3 +1,7 @@
+# Copyright (c) 2026 蒲俊杰（Pu Junjie）. All rights reserved.
+# 许可见 https://github.com/StarCompute/reflow_ai/blob/main/proctune/LICENSE.md
+# 个人使用（含个人商业）免费；企业/组织商业使用需获得授权。
+
 """应用层 API（FastAPI）。
 
 对应 V2 §9 API 设计。演示实现 recommend / dispatch / feedback / health。

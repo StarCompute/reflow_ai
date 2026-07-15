@@ -3,9 +3,15 @@
 
 """EasyTuner：表格进、表格出的极简工艺参数推荐器（面向不懂 AI 的现场人员）。
 
-用法（三行）：
+两种用法：
     from proctune.easy import EasyTuner
+
+    # 1) 极简·自动模式：什么列都不用填，自动识别可调参数/属性/质量列
+    tuner = EasyTuner("历史样本.csv")
+
+    # 2) 专业·显式模式：正式场景 / 含文字型参数或数值型属性时更可靠
     tuner = EasyTuner("历史样本.csv", knob_cols=[...], context_cols=[...], quality_col="质量")
+
     tuner.train()
     tuner.recommend_to_csv("新任务.csv", "推荐结果.csv")   # 拿到系统推荐的参数
 
@@ -29,6 +35,48 @@ from proctune.core.models.recommender import Recommender, Constraint
 # 质量列里表示「良品 / 没缺陷」的取值（大小写不敏感匹配）
 GOOD_LABELS = {"ok", "good", "pass", "合格", "良", "良品", "无缺陷", "无",
                "合格品", "none", "okay", "0", ""}
+
+# ---- 自动推断用的列名关键词（命中即优先判定，大小写不敏感、子串匹配） ----
+# 质量结果列：像「质量/评分/结果/缺陷」这类
+QUALITY_NAME_HINTS = ["质量", "评分", "得分", "结果", "缺陷", "良率", "良品", "合格",
+                      "quality", "score", "defect", "label", "result", "yield", "pass"]
+# 产品属性列（不可调、已知）：即使是数字也应归为上下文
+CONTEXT_NAME_HINTS = ["材料", "牌号", "型号", "产品", "规格", "壁厚", "厚度", "直径",
+                      "镀种", "克重", "尺寸", "批次", "颜色",
+                      "material", "grade", "type", "product", "spec", "size",
+                      "thickness", "diameter", "batch", "color"]
+
+
+def _name_hit(col: str, hints) -> bool:
+    lc = str(col).lower()
+    return any(h.lower() in lc for h in hints)
+
+
+def _auto_quality_col(rows, cols) -> str:
+    """自动挑出最像「质量结果」的那一列。
+    优先按列名关键词命中；否则退化为「最后一列」（常见约定质量放最后）。
+    """
+    for h in QUALITY_NAME_HINTS:
+        for c in cols:
+            if h.lower() in str(c).lower():
+                return c
+    return cols[-1]
+
+
+def _auto_split_knob_context(rows, cols):
+    """把剩余列自动分成「可调参数(knob)」和「产品属性(context)」。
+    规则：文本列 → 属性；数值列默认 → 可调参数，但列名像属性(壁厚/尺寸…)的数值列仍归属性。
+    """
+    knobs, ctx = [], []
+    for c in cols:
+        if _col_is_numeric(rows, c):
+            if _name_hit(c, CONTEXT_NAME_HINTS):
+                ctx.append(c)      # 数字但明显是属性（如壁厚/克重）
+            else:
+                knobs.append(c)    # 数字且可调（温度/压力/时间…）
+        else:
+            ctx.append(c)          # 文本一律当属性（材料/镀种…）
+    return knobs, ctx
 
 
 # --------------------------- 表格读写与类型推断（不依赖 pandas） ---------------------------
@@ -141,23 +189,52 @@ class _TableSearch(SearchStrategy):
 class EasyTuner:
     """给不懂 AI 的人用的工艺参数推荐器。
 
+    两种用法
+    --------
+    1) 极简（自动推断，什么列都不用填）：
+           tuner = EasyTuner("历史样本.csv")
+       系统自动识别：像「质量/评分/缺陷」的列当质量结果；数值列当可调参数；
+       文本列（及壁厚/尺寸等明显属性的数值列）当产品属性。
+
+    2) 专业（显式指定列，推荐用于正式场景）：
+           tuner = EasyTuner("历史样本.csv",
+                             knob_cols=[...], context_cols=[...], quality_col="质量")
+       当数值列里既有「可调参数」又有「不可调属性」、无法靠列名区分时，
+       请显式指定，结果最可靠。
+
     参数
     ----
     data         : 历史样本 CSV 路径，或 list[dict]。每行 = 一次生产记录。
-    knob_cols    : 可调工艺参数列名（系统要帮你「反推」出来的东西，如温度/压力）。
-    context_cols : 产品属性列名（已知、不可调，如材料/厚度）。
-    quality_col  : 质量结果列名。可以是缺陷名（"OK"/"短射"...）或连续评分（0~100）。
+    knob_cols    : 可调工艺参数列名（系统要帮你「反推」出来的东西，如温度/压力）。缺省则自动推断。
+    context_cols : 产品属性列名（已知、不可调，如材料/厚度）。缺省则自动推断。
+    quality_col  : 质量结果列名。可以是缺陷名（"OK"/"短射"...）或连续评分（0~100）。缺省则自动推断。
     quality_kind : 'defect' / 'score'，默认自动推断（文本→defect，数字→score）。
     score_scale  : 评分模式下的满分值，默认自动（按数据最大值）。
     name         : 业务名称（仅用于标识）。
     """
 
-    def __init__(self, data, knob_cols, context_cols, quality_col,
+    def __init__(self, data, knob_cols=None, context_cols=None, quality_col=None,
                  quality_kind: Optional[str] = None, score_scale: Optional[float] = None,
                  name: str = "my_business", n_trees: int = 200):
         self._rows = _read_table(data)
         if not self._rows:
             raise ValueError("历史样本为空，请检查 data 路径或内容。")
+
+        # 列定义：缺省的部分自动推断（未填的才推断，已填的完全尊重用户）
+        all_cols = list(self._rows[0].keys())
+        self.auto_inferred = (knob_cols is None or context_cols is None or quality_col is None)
+        if quality_col is None:
+            quality_col = _auto_quality_col(self._rows, all_cols)
+        remaining = [c for c in all_cols if c != quality_col]
+        if knob_cols is None and context_cols is None:
+            knob_cols, context_cols = _auto_split_knob_context(self._rows, remaining)
+        elif knob_cols is None:
+            context_cols = list(context_cols)
+            knob_cols = [c for c in remaining if c not in context_cols]
+        elif context_cols is None:
+            knob_cols = list(knob_cols)
+            context_cols = [c for c in remaining if c not in knob_cols]
+
         self.knob_cols = list(knob_cols)
         self.context_cols = list(context_cols)
         self.quality_col = quality_col
@@ -385,6 +462,7 @@ class EasyTuner:
             return "尚未训练。"
         mode = "离散枚举择优" if any(k[1] == "categorical" for k in self._knob_defs) else "参数寻优"
         q = "缺陷分类" if self._quality_kind == "defect" else f"评分回归(满分{self._score_scale_used})"
-        return (f"业务[{self.name}] 已就绪：旋钮={self.knob_cols}；"
-                f"产品属性={self.context_cols}；质量={q}；推荐模式={mode}；"
-                f"样本数={len(self._rows)}")
+        src = "列自动推断" if getattr(self, "auto_inferred", False) else "列手动指定"
+        return (f"业务[{self.name}] 已就绪（{src}）：可调参数={self.knob_cols}；"
+                f"产品属性={self.context_cols}；质量列={self.quality_col}({q})；"
+                f"推荐模式={mode}；样本数={len(self._rows)}")

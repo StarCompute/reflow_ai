@@ -1,3 +1,9 @@
+<!--
+版权 (c) 2026 蒲俊杰（Pu Junjie）. 保留所有权利。
+许可见 https://github.com/StarCompute/reflow_ai/blob/main/proctune/LICENSE.md
+个人使用（含个人商业）免费；企业/组织商业使用需获得授权。
+-->
+
 # proctune 使用文档：如何把系统接入你自己的业务
 
 > **版权与许可**：版权归 **蒲俊杰（Pu Junjie）** 所有。

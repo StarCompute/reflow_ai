@@ -1,3 +1,7 @@
+# Copyright (c) 2026 蒲俊杰（Pu Junjie）. All rights reserved.
+# 许可见 https://github.com/StarCompute/reflow_ai/blob/main/proctune/LICENSE.md
+# 个人使用（含个人商业）免费；企业/组织商业使用需获得授权。
+
 """模型1 · 工艺代理模型（Surrogate）。
 
 设定值（温区×10 + 链速）→ 预测 6 通道炉温曲线。

@@ -1,3 +1,7 @@
+# Copyright (c) 2026 蒲俊杰（Pu Junjie）. All rights reserved.
+# 许可见 https://github.com/StarCompute/reflow_ai/blob/main/proctune/LICENSE.md
+# 个人使用（含个人商业）免费；企业/组织商业使用需获得授权。
+
 """数据库层：SQLAlchemy ORM 定义 + 建表 + 会话。
 
 对应 V2 §4 SQL DDL 与 14 数据字典。字段、类型、约束保持一致。

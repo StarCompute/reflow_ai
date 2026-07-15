@@ -1,3 +1,9 @@
+<!--
+  版权 (c) 2026 蒲俊杰（Pu Junjie）. 保留所有权利。
+  许可见 https://github.com/StarCompute/reflow_ai/blob/main/proctune/LICENSE.md
+  个人使用（含个人商业）免费；企业/组织商业使用需获得授权。
+-->
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -154,24 +160,41 @@ ABS,2.0</code></pre>
 <hr>
 
 <h2>三、三行代码，拿到推荐</h2>
-<p>把下面代码保存成 <code>run.py</code>，改一下文件名和列名就能用：</p>
+<p>系统有<strong>两种用法</strong>，先看最省事的自动模式，专业模式在 3·2 节。</p>
+
+<h3>3·1 极简自动模式（推荐新手：什么列都不用填）</h3>
+<p>连列名都不用告诉系统，它会自己认：像"质量/评分/缺陷"的列当<strong>质量</strong>，数值列（温度/压力/时间…）当<strong>可调参数</strong>，文本列和"壁厚/尺寸"等属性列当<strong>产品属性</strong>。</p>
 <pre><code>from proctune.easy import EasyTuner
 
-# 第 1 步：告诉系统哪几列是"要反推的参数"、哪几列是"产品属性"、哪列是"质量"
+tuner = EasyTuner("历史样本.csv")     # 一个参数都不用填，自动识别各列
+tuner.train()
+tuner.recommend_to_csv("新任务.csv", "推荐结果.csv")</code></pre>
+<p>运行后，<code>推荐结果.csv</code> 里每一行都会多出几列：<code>推荐_料筒温度</code>、<code>推荐_注射压力</code>、…… 以及 <code>预测良率</code>、<code>排名</code>。你直接照着"推荐_xxx"那几列去设机台参数即可。屏幕上还会打印一行 <code>已就绪（列自动推断）：可调参数=…；产品属性=…；质量列=…</code>，<strong>务必核对一眼</strong>，看系统认得对不对。</p>
+<blockquote><p>⚠️ 自动模式的<strong>唯一软肋</strong>：如果你的"可调参数"是<strong>文字</strong>（比如"电流密度档=低/中/高"、"烤箱模式=热风/上下火"），系统会误以为它是产品属性，从而<strong>不去调它</strong>。遇到这种情况，请改用下面的专业模式显式指定。</p></blockquote>
+
+<h3>3·2 专业模式（正式场景推荐：显式指定各列，最可靠）</h3>
+<p>在正式落地、或数值列里"既有能调的参数、又有不能调的属性"（如"壁厚"是数字但不可调）时，<strong>强烈建议显式指定三类列</strong>，避免系统猜错：</p>
+<pre><code>from proctune.easy import EasyTuner
+
+# 明确告诉系统：哪几列是"要反推的参数"、哪几列是"产品属性"、哪列是"质量"
 tuner = EasyTuner(
     data="历史样本.csv",
-    knob_cols=["料筒温度", "注射压力", "保压时间", "模具温度"],
-    context_cols=["材料", "壁厚"],
-    quality_col="质量",
+    knob_cols=["料筒温度", "注射压力", "保压时间", "模具温度"],   # 可调参数（含文字型也能正确当参数）
+    context_cols=["材料", "壁厚"],                              # 产品属性（已知、不可调）
+    quality_col="质量",                                        # 质量结果列
 )
-
-# 第 2 步：让系统从历史样本里学规律（一键完成）
 tuner.train()
-
-# 第 3 步：把新任务交给系统，推荐结果写到 推荐结果.csv
 tuner.recommend_to_csv("新任务.csv", "推荐结果.csv")</code></pre>
-<p>运行后，<code>推荐结果.csv</code> 里每一行都会多出几列：<code>推荐_料筒温度</code>、<code>推荐_注射压力</code>、…… 以及 <code>预测良率</code>、<code>排名</code>。
-你直接照着"推荐_xxx"那几列去设机台参数即可。</p>
+<p><strong>为什么专业模式更可靠？</strong> 系统反推参数必须先分清三件事，而光看数据无法可靠区分：</p>
+<table>
+  <thead><tr><th>概念</th><th>含义</th><th>举例</th><th>为什么不能全靠自动猜</th></tr></thead>
+  <tbody>
+    <tr><td><code>knob_cols</code> 可调参数</td><td>系统要帮你算出来的</td><td>料筒温度、注射压力</td><td>文字型参数（低/中/高）会被自动模式误当属性</td></tr>
+    <tr><td><code>context_cols</code> 产品属性</td><td>已知、不可调</td><td>材料、壁厚</td><td>"壁厚"是数字，自动模式可能误当成可调参数</td></tr>
+    <tr><td><code>quality_col</code> 质量列</td><td>学好坏的评价</td><td>质量、评分</td><td>列名不含关键词时只能猜"最后一列"</td></tr>
+  </tbody>
+</table>
+<blockquote><p>一句话：<strong>新手/试玩用 3·1 自动模式；正式生产、或含文字型参数/数值型属性时用 3·2 专业模式。</strong> 两种写法可随时切换，互不影响。</p></blockquote>
 <h3>如果你已经训练过（有训练结果文件）</h3>
 <p>第一次跑完 <code>tuner.train()</code> 后，模型会存成 <code>tuner_model.pkl</code>（见第四章）。<strong>以后再要推荐，不用重新训练，一行代码就能用</strong>：</p>
 <pre><code>from proctune.easy import EasyTuner
@@ -180,6 +203,53 @@ tuner.recommend_to_csv("新任务.csv", "推荐结果.csv")</code></pre>
 EasyTuner.load("tuner_model.pkl").recommend_to_csv("新任务.csv", "推荐结果.csv")</code></pre>
 <blockquote><p>说明：<code>.pkl</code> 里已经包含了学好的规律和所有列定义，所以不用再写 <code>knob_cols</code>/<code>context_cols</code> 那些参数。换产品、换材料时，只要把新的"新任务.csv"换掉即可，模型照常能给推荐；只有当你的历史数据或工艺大变（比如换了完全不同的工序）时，才需要重新 <code>train()</code> 一遍。</p></blockquote>
 
+
+<hr>
+
+<h2>三·五、连一行代码都不想写？用命令行</h2>
+<p>如果你连上面三行 Python 都不想写，可以直接用<strong>命令行</strong>：不用建 <code>.py</code> 文件，在项目根目录敲一条命令，就能训练并出推荐。命令行同样有<strong>自动</strong>和<strong>专业</strong>两种。</p>
+<h3>最省事：自动模式（连列名都不填）</h3>
+<pre><code>python -m proctune.easy --data 历史样本.csv --new 新任务.csv --out 推荐结果.csv</code></pre>
+<p>系统自动识别各列（同 3·1 节规则）。若你的可调参数是文字型（低/中/高等），请用下面的专业模式。</p>
+<h3>专业模式：一步到位训练 + 推荐（显式指定各列）</h3>
+<pre><code>python -m proctune.easy \
+    --data 历史样本.csv \
+    --knobs 料筒温度,注射压力,保压时间,模具温度 \
+    --context 材料,壁厚 \
+    --quality 质量 \
+    --new 新任务.csv \
+    --out 推荐结果.csv</code></pre>
+<blockquote><p>Windows PowerShell 里把换行的 <code>\</code> 去掉、写成一整行即可（或用反引号 <code>`</code> 换行）。</p></blockquote>
+<p>跑完 <code>推荐结果.csv</code> 就是你要的推荐参数，屏幕上也会直接打印出来。</p>
+<h3>参数说明</h3>
+<table>
+  <thead><tr><th>参数</th><th>作用</th><th>是否必填</th></tr></thead>
+  <tbody>
+    <tr><td><code>--data</code></td><td>历史样本 CSV 路径（训练用）</td><td>训练时必填</td></tr>
+    <tr><td><code>--knobs</code></td><td>可调参数列名，<strong>逗号分隔</strong>，如 <code>料筒温度,注射压力</code></td><td>可选，不填自动推断</td></tr>
+    <tr><td><code>--context</code></td><td>产品属性列名，逗号分隔，如 <code>材料,壁厚</code></td><td>可选，不填自动推断</td></tr>
+    <tr><td><code>--quality</code></td><td>质量结果列名，如 <code>质量</code></td><td>可选，不填自动推断</td></tr>
+    <tr><td><code>--quality-kind</code></td><td><code>defect</code>(缺陷文本) / <code>score</code>(数值评分)，默认自动判断</td><td>可选</td></tr>
+    <tr><td><code>--new</code></td><td>新任务 CSV 路径</td><td>要出推荐时填</td></tr>
+    <tr><td><code>--out</code></td><td>推荐结果输出路径</td><td>有 <code>--new</code> 时必填</td></tr>
+    <tr><td><code>--top-k</code></td><td>每个新任务给几个候选，默认 1</td><td>可选</td></tr>
+    <tr><td><code>--n-trees</code></td><td>随机森林树数，默认 200，调小更快</td><td>可选</td></tr>
+    <tr><td><code>--save</code></td><td>训练后把模型保存到 <code>.pkl</code></td><td>可选</td></tr>
+    <tr><td><code>--model</code></td><td>直接加载已保存的 <code>.pkl</code> 出推荐（免训练）</td><td>可选</td></tr>
+    <tr><td><code>--add</code></td><td>先把一批新数据并入 <code>--data</code> 再训练</td><td>可选</td></tr>
+  </tbody>
+</table>
+<h3>只训练、保存模型（下次免训练）</h3>
+<pre><code>python -m proctune.easy --data 历史样本.csv \
+    --knobs 料筒温度,注射压力,保压时间,模具温度 --context 材料,壁厚 --quality 质量 \
+    --save tuner_model.pkl</code></pre>
+<h3>用已保存的模型直接出推荐（不用再写列名）</h3>
+<pre><code>python -m proctune.easy --model tuner_model.pkl --new 新任务.csv --out 推荐结果.csv</code></pre>
+<h3>有了新数据，并入后重训</h3>
+<pre><code>python -m proctune.easy --data 历史样本.csv --add 本周新数据.csv \
+    --knobs 料筒温度,注射压力,保压时间,模具温度 --context 材料,壁厚 --quality 质量 \
+    --save tuner_model.pkl</code></pre>
+<blockquote><p>想看完整帮助：<code>python -m proctune.easy --help</code></p></blockquote>
 
 <hr>
 
@@ -301,6 +371,45 @@ tuner.recommend_to_csv("新任务.csv", "推荐结果.csv")</code></pre>
   <li>页面直接展示推荐参数表格，并可下载 <code>recommend_result.csv</code>。</li>
 </ol>
 <p>网页背后调用的就是同一个 <code>EasyTuner</code>（通过 <code>proctune/easy/web_bridge.py</code> 桥接）。</p>
+
+<hr>
+<h2>九、几组现成的样本数据（拿来就能练手）</h2>
+<p>仓库在 <code>proctune/examples/data/samples/</code> 下准备了 <strong>4 组不同行业、不同格式</strong>的样本，每组都含"历史样本"和"新任务"两张表，方便你直接用命令行练手、对照学习。</p>
+<table>
+  <thead><tr><th>组</th><th>行业</th><th>质量列类型</th><th>特点</th><th>列名</th></tr></thead>
+  <tbody>
+    <tr><td>01</td><td>注塑</td><td>缺陷文本（OK/短射…）</td><td>全连续旋钮</td><td>中文</td></tr>
+    <tr><td>02</td><td>热处理</td><td>数值评分 0~100</td><td>全连续旋钮</td><td>英文</td></tr>
+    <tr><td>03</td><td>电镀</td><td>缺陷文本</td><td>含<strong>离散类别旋钮</strong>（电流密度档 低/中/高）</td><td>中文</td></tr>
+    <tr><td>04</td><td>烘焙</td><td>数值评分</td><td>含离散旋钮（烤箱模式）+ 中英混合</td><td>中文</td></tr>
+  </tbody>
+</table>
+<h3>逐组命令（在项目根目录执行）</h3>
+<p><strong>01 注塑（缺陷文本 + 连续旋钮）</strong></p>
+<pre><code>python -m proctune.easy \
+  --data proctune/examples/data/samples/01_注塑_历史样本.csv \
+  --knobs 料筒温度,注射压力,保压时间,模具温度 --context 材料,壁厚 --quality 质量 \
+  --new proctune/examples/data/samples/01_注塑_新任务.csv \
+  --out 注塑_推荐结果.csv</code></pre>
+<p><strong>02 热处理（数值评分 + 英文列名）</strong></p>
+<pre><code>python -m proctune.easy \
+  --data proctune/examples/data/samples/02_热处理_历史样本.csv \
+  --knobs heat_temp,soak_min,cool_rate --context grade,size_mm --quality score \
+  --new proctune/examples/data/samples/02_热处理_新任务.csv \
+  --out 热处理_推荐结果.csv</code></pre>
+<p><strong>03 电镀（缺陷文本 + 离散类别旋钮）</strong></p>
+<pre><code>python -m proctune.easy \
+  --data proctune/examples/data/samples/03_电镀_历史样本.csv \
+  --knobs 电流密度档,温度,时间 --context 镀种 --quality 质量 \
+  --new proctune/examples/data/samples/03_电镀_新任务.csv \
+  --out 电镀_推荐结果.csv</code></pre>
+<p><strong>04 烘焙（数值评分 + 离散旋钮）</strong></p>
+<pre><code>python -m proctune.easy \
+  --data proctune/examples/data/samples/04_烘焙_历史样本.csv \
+  --knobs 烤箱模式,温度,时间 --context 产品,克重 --quality 评分 \
+  --new proctune/examples/data/samples/04_烘焙_新任务.csv \
+  --out 烘焙_推荐结果.csv</code></pre>
+<blockquote><p>这 4 组数据是按各行业的隐藏规律随机生成的（每组几百行），<strong>仅供学习和功能测试</strong>，不代表真实工艺参数。你完全可以把它们换成自己厂里的 CSV，命令一行都不用改。</p></blockquote>
 
 <div class="footer">
   proctune · 通用工艺参数推荐框架 · 本文档面向现场工程师，由 EASY.md 转换生成，原 Markdown 文件保持不变。

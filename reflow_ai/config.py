@@ -1,3 +1,7 @@
+# Copyright (c) 2026 蒲俊杰（Pu Junjie）. All rights reserved.
+# 许可见 https://github.com/StarCompute/reflow_ai/blob/main/proctune/LICENSE.md
+# 个人使用（含个人商业）免费；企业/组织商业使用需获得授权。
+
 """全局配置：工艺窗口硬约束、缺陷标签、路径。
 
 对应 V2 §7 安全约束与清单 1.3 质量红线。

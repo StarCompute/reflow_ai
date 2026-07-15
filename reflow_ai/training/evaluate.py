@@ -1,3 +1,7 @@
+# Copyright (c) 2026 蒲俊杰（Pu Junjie）. All rights reserved.
+# 许可见 https://github.com/StarCompute/reflow_ai/blob/main/proctune/LICENSE.md
+# 个人使用（含个人商业）免费；企业/组织商业使用需获得授权。
+
 """模型评估与验收指标（对应清单 2.6 / V2 §12 验收）。
 
 在 demo / CI 中调用，输出与验收线对照的量化指标：

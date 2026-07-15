@@ -1,3 +1,7 @@
+# Copyright (c) 2026 蒲俊杰（Pu Junjie）. All rights reserved.
+# 许可见 https://github.com/StarCompute/reflow_ai/blob/main/proctune/LICENSE.md
+# 个人使用（含个人商业）免费；企业/组织商业使用需获得授权。
+
 """特征工程：曲线 → 8 维曲线特征；拼接 16 维模型输入。
 
 对应 V2 §5 与清单 1.2 / 2.3。

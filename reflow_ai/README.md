@@ -1,3 +1,9 @@
+<!--
+版权 (c) 2026 蒲俊杰（Pu Junjie）. 保留所有权利。
+许可见 https://github.com/StarCompute/reflow_ai/blob/main/proctune/LICENSE.md
+个人使用（含个人商业）免费；企业/组织商业使用需获得授权。
+-->
+
 # 回流焊 AI 工艺优化系统 · 代码实现（V2 配套）
 
 > 对应文档：`docs/tech-design-v2.html`（技术方案 V2）、`docs/data-algo-checklist.html`（采集&算法清单）。
