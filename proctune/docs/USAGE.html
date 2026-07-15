@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>proctune 使用文档：如何把系统接入你自己的业务</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --fg: #1f2328;
+    --muted: #57606a;
+    --accent: #2563eb;
+    --accent-bg: #eff6ff;
+    --border: #d0d7de;
+    --code-bg: #f6f8fa;
+    --table-head: #f6f8fa;
+    --quote-bg: #fff8e6;
+    --quote-border: #d4a72c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                 "Hiragino Sans GB", "Microsoft YaHei", Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+  .wrap {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 48px 28px 80px;
+  }
+  h1 {
+    font-size: 30px;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 14px;
+    margin: 0 0 28px;
+  }
+  h2 {
+    font-size: 23px;
+    margin: 44px 0 18px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  h3 {
+    font-size: 19px;
+    margin: 30px 0 12px;
+    color: var(--accent);
+  }
+  h4 {
+    font-size: 16px;
+    margin: 22px 0 10px;
+    font-weight: 600;
+  }
+  p { margin: 12px 0; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  ul, ol { padding-left: 26px; margin: 12px 0; }
+  li { margin: 6px 0; }
+  code {
+    background: var(--code-bg);
+    border-radius: 5px;
+    padding: 2px 6px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 13.5px;
+    color: #b51d4c;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 18px;
+    overflow-x: auto;
+    margin: 16px 0;
+  }
+  pre code {
+    background: none;
+    padding: 0;
+    color: #1f2328;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  blockquote {
+    background: var(--quote-bg);
+    border-left: 4px solid var(--quote-border);
+    margin: 18px 0;
+    padding: 12px 18px;
+    border-radius: 0 6px 6px 0;
+    color: #5c4a14;
+  }
+  blockquote p { margin: 6px 0; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 18px 0;
+    font-size: 14.5px;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 9px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: var(--table-head); font-weight: 600; }
+  tr:nth-child(even) td { background: #fbfcfd; }
+  hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 36px 0;
+  }
+  .toc {
+    background: var(--accent-bg);
+    border: 1px solid #c7d7f5;
+    border-radius: 8px;
+    padding: 14px 22px;
+    margin: 24px 0 8px;
+  }
+  .toc b { color: var(--accent); }
+  .toc ol { margin: 8px 0; }
+  .tag {
+    display: inline-block;
+    background: var(--accent-bg);
+    color: var(--accent);
+    border-radius: 4px;
+    padding: 1px 8px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-left: 4px;
+  }
+  .footer {
+    margin-top: 60px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 13px;
+  }
+  @media (max-width: 600px) {
+    .wrap { padding: 28px 16px 60px; }
+    h1 { font-size: 25px; }
+    table { font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>proctune 使用文档：如何把系统接入你自己的业务</h1>
+
+<div class="toc">
+  <b>目录</b>
+  <ol>
+    <li><a href="#s1">先判断你的业务是否适配</a></li>
+    <li><a href="#s2">接入只需要 4 步（核心：写一份画像 + 几个适配器）</a></li>
+    <li><a href="#s3">三个内置业务示例（可直接抄去改）</a></li>
+    <li><a href="#s4">内置示例的关键结果（验证框架有效）</a></li>
+    <li><a href="#s5">生产化替换指引（接口不变，只换实现）</a></li>
+    <li><a href="#s6">常见问题</a></li>
+  </ol>
+</div>
+
+<blockquote>
+  <p>本框架解决的是一类<strong>通用问题</strong>，不只是回流焊：</p>
+  <p>只要你的业务满足「<strong>可调工艺参数 → 过程 → 可测信号/对象属性 → 质量结果</strong>」，
+  就能用同一套引擎做「给定对象，反求最优参数」的推荐，并带安全约束拦截。</p>
+  <p>本文档重点回答：<strong>我有一个类似但不同的业务，怎么调用这套代码？</strong></p>
+</blockquote>
+
+<hr>
+
+<h2 id="s1">一、先判断你的业务是否适配</h2>
+
+<p>下面三种形态都能直接用，框架自动选对应推荐模式：</p>
+
+<table>
+  <thead>
+    <tr><th>业务形态</th><th>例子</th><th>信号</th><th>旋钮</th><th>质量</th><th>推荐模式</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>A. 信号介导</td><td>回流焊、波峰焊、热处理</td><td>有（炉温曲线等）</td><td>连续</td><td>缺陷分类</td><td><strong>贝叶斯优化 BO</strong></td></tr>
+    <tr><td>B. 无信号·直连</td><td>注塑、涂装、3D 打印</td><td>无</td><td>连续</td><td>缺陷分类</td><td><strong>贝叶斯优化 BO</strong></td></tr>
+    <tr><td>C. 无信号·离散</td><td>黄铜高炉（选哪座炉）</td><td>无</td><td>离散</td><td>评分回归</td><td><strong>离散枚举择优</strong></td></tr>
+  </tbody>
+</table>
+
+<blockquote>
+  <p>形态 B 与 A 的差别只是「没有中间信号」：质量模型输入直接由旋钮+上下文拼成，
+  跳过代理模型。引擎对两者透明。</p>
+</blockquote>
+
+<hr>
+
+<h2 id="s2">二、接入只需要 4 步（核心：写一份画像 + 几个适配器）</h2>
+
+<p>以「新增一个业务」为例，你<strong>不需要改 <code>core/</code> 任何代码</strong>。</p>
+
+<h3>第 1 步：写业务画像 <code>BusinessProfile</code></h3>
+
+<p>用声明式数据类描述 5 个抽象（旋钮 / 信号 / 特征 / 上下文 / 质量 / 约束）：</p>
+
+<pre><code>from proctune.core.abstractions import (BusinessProfile, KnobSpace, KnobParam,
+                                        SignalSpec, FeatureSpec, ContextSpec, ContextField,
+                                        QualitySpec, ConstraintSpec)
+
+MY_PROFILE = BusinessProfile(
+    name="my_business",
+    description="一句话说明你的业务",
+    # 1) 旋钮（可调工艺参数）
+    knob_space=KnobSpace(params=[
+        KnobParam("temp_a", 180.0, 260.0, "℃"),
+        KnobParam("pressure", 40.0, 140.0, "MPa"),
+        # 离散旋钮这样写：
+        # KnobParam("furnace", 0, 1, "", kind="categorical", categories=["new","old"]),
+    ]),
+    # 2) 信号（没有就填 n_channels=0）
+    signal=SignalSpec(n_channels=6, n_points=180, duration=240.0, unit="℃"),
+    # 3) 信号特征名（用于约束校验；无信号填空）
+    features=FeatureSpec(names=["peak_temp", "tal", "ramp_up"]),
+    # 4) 对象上下文（被加工对象的属性；categorical 需给编码表）
+    context=ContextSpec(fields=[
+        ContextField("thickness_mm", "numeric", 1.6),
+        ContextField("material", "categorical", 0, {"PP": 1.0, "ABS": 2.0}),
+    ]),
+    # 5) 质量（defect=多标签分类 / score=连续评分回归）
+    quality=QualitySpec(kind="defect", defect_labels=["缺陷A", "缺陷B"]),
+    # 6) 安全硬约束（键必须是上面的特征名；越界 100% 拦截）
+    constraints=ConstraintSpec(window={"peak_temp": (235.0, 250.0)}),
+)</code></pre>
+
+<h3>第 2 步：实现适配器（实现 <code>core/interfaces</code> 里的接口）</h3>
+
+<p><strong>有信号业务（形态 A）需要实现 3 个</strong>：<code>SignalSimulator</code>、<code>FeatureExtractor</code>、<code>SyntheticGenerator</code>，
+再加一个 <code>SearchStrategy</code>（给 BO 提供边界与先验种子）。</p>
+
+<pre><code>from proctune.core.interfaces import SignalSimulator, FeatureExtractor, SyntheticGenerator, SearchStrategy
+import numpy as np
+
+class MySimulator(SignalSimulator):
+    """物理基线：旋钮 → 过程信号。生产可换成读真实时序库。"""
+    def predict(self, setting):
+        # setting 是 {旋钮名: 值} 的字典
+        return np.zeros((6, 180))   # 返回 (n_channels, n_points)
+
+class MyExtractor(FeatureExtractor):
+    def extract_features(self, signal):
+        return {"peak_temp": float(signal.max()), "tal": 0.0, "ramp_up": 0.0}
+    def build_quality_input(self, setting, context, feats, env=None):
+        # 把「信号特征 + 上下文」拼成质量模型输入向量（顺序自定，但训练/推理一致）
+        return np.array([feats["peak_temp"], context["thickness_mm"],
+                         context["material"]], dtype=float)
+
+class MySynthetic(SyntheticGenerator):
+    """演示造数器；生产换成「读真实库」的适配器（同样返回 Record 列表）。"""
+    def generate(self, n, seed=None):
+        from proctune.core.abstractions import Record
+        rng = np.random.RandomState(seed)
+        recs = []
+        for _ in range(n):
+            setting = {"temp_a": rng.uniform(180,260), "pressure": rng.uniform(40,140)}
+            signal = MySimulator().predict(setting)
+            feats = MyExtractor().extract_features(signal)
+            # 用你的「老师傅经验/真实规律」算标签
+            label = "缺陷A" if feats["peak_temp"] < 240 else "无"
+            recs.append(Record(setting=setting,
+                               context={"thickness_mm": 1.6, "material": 1.0},
+                               signal=signal, quality_label=label))
+        return recs
+
+class MySearch(SearchStrategy):
+    def bounds(self):
+        return {"temp_a": (180.0, 260.0), "pressure": (40.0, 140.0)}
+    def initial_candidates(self, context):
+        # 返回若干「已知合法/先验」设定，加速 BO 收敛
+        return [{"temp_a": 240.0, "pressure": 90.0}]</code></pre>
+
+<p><strong>无信号业务（形态 B/C）更简单</strong>：<code>SignalSimulator</code> 传 <code>None</code>，
+<code>FeatureExtractor.extract_features</code> 返回 <code>{}</code>，<code>build_quality_input</code> 直接用旋钮+上下文拼向量即可。
+离散业务（形态 C）连 <code>SearchStrategy</code> 都不用给。</p>
+
+<h3>第 3 步：组装引擎并训练</h3>
+
+<pre><code>from proctune.core.pipeline import ProcessTuningEngine
+
+engine = ProcessTuningEngine(
+    profile=MY_PROFILE,
+    simulator=MySimulator(),        # 无信号业务传 None
+    extractor=MyExtractor(),
+    synth=MySynthetic(),
+    search=MySearch(),              # 离散业务传 None
+    model_dir="./models_my",
+)
+engine.train(2000)                  # 造数 → 训代理 + 质量 + 推荐，并落盘</code></pre>
+
+<h3>第 4 步：推荐 + 安全网关（线上调用）</h3>
+
+<pre><code># 给定一块新对象的上下文，反求最优参数
+result = engine.recommend({"thickness_mm": 2.0, "material": "PP"}, top_k=1)
+top = result[0]
+print(top["setting"], top["score"], top["quality"])   # 设定 / 预测良率 / 缺陷概率
+
+# 下发前安全校验：越界 100% 拦截
+ok, penalty, feats = engine.dispatch_check(top["setting"], {"thickness_mm": 2.0, "material": "PP"})
+if not ok:
+    print("被安全网关拦截，罚分", penalty)</code></pre>
+
+<p><strong>就这四步。引擎、三模型、评估、安全网关全部复用，零改动。</strong></p>
+
+<hr>
+
+<h2 id="s3">三、三个内置业务示例（可直接抄去改）</h2>
+
+<p>仓库已带三个完整可跑的业务，覆盖全部三种形态，运行：</p>
+
+<pre><code>python -m proctune.examples.run_all</code></pre>
+
+<table>
+  <thead>
+    <tr><th>示例</th><th>文件</th><th>形态</th><th>看点</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>回流焊</td><td><code>examples/run_reflow.py</code></td><td>A 信号介导·连续BO·缺陷分类</td><td>8 温区+链速 → 炉温曲线 → 5 缺陷；个性化推荐，约束满足率 100%</td></tr>
+    <tr><td>黄铜高炉</td><td><code>examples/run_blast_furnace.py</code></td><td>C 无信号·离散枚举·评分回归</td><td>进料含量 → 选哪座炉；推荐随含量变化（低含量选新炉、高含量选旧炉）</td></tr>
+    <tr><td>注塑</td><td><code>examples/run_injection_molding.py</code></td><td>B 无信号·连续BO·缺陷分类</td><td>料温/压力/保压/模温 → 4 缺陷；质量直连旋钮，无中间信号</td></tr>
+  </tbody>
+</table>
+
+<p>每个示例都是「组装 4 个适配器 + <code>engine.train</code> + <code>engine.recommend</code> + <code>evaluate</code>」的固定套路，
+你照着把适配器换成自己的实现即可。</p>
+
+<hr>
+
+<h2 id="s4">四、内置示例的关键结果（验证框架有效）</h2>
+
+<ul>
+  <li><strong>回流焊</strong>：约束满足率 <code>1.0</code>、平均预测良率 <code>1.0</code>、代理模型 RMSE <code>≈0.5℃</code>；
+  不同板型返回不同温区剖面（薄板峰值更低），体现「看板设温」。</li>
+  <li><strong>黄铜高炉</strong>：进料 30%→推荐新炉(72.3&gt;59.6)，70%→推荐旧炉(87.6&gt;69.5)，
+  说明离散择优随对象上下文动态变化。</li>
+  <li><strong>注塑</strong>：三类制件预测良率均 <code>≈0.88</code>，缺陷概率低。</li>
+</ul>
+
+<hr>
+
+<h2 id="s5">五、生产化替换指引（接口不变，只换实现）</h2>
+
+<table>
+  <thead>
+    <tr><th>模块</th><th>演示实现</th><th>生产替换</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>代理模型残差</td><td><code>MLPRegressor</code></td><td>PyTorch PINN（物理约束网络）</td></tr>
+    <tr><td>质量模型</td><td><code>RandomForest</code> 多标签 / 回归</td><td>XGBoost（<code>MultiOutputClassifier</code>）</td></tr>
+    <tr><td>推荐搜索</td><td>自实现 GP+UCB</td><td><code>bayesian-optimization</code> 库</td></tr>
+    <tr><td>造数器</td><td><code>SyntheticGenerator</code>（随机）</td><td>读真实库的同接口适配器</td></tr>
+    <tr><td>信号来源</td><td><code>SignalSimulator</code>（物理基线）</td><td>真实时序库（InfluxDB 等）读取</td></tr>
+  </tbody>
+</table>
+
+<p>所有替换都<strong>只改 <code>adapters/</code> 里的实现，不动 <code>core/</code></strong>，保证引擎稳定。</p>
+
+<hr>
+
+<h2 id="s6">六、常见问题</h2>
+
+<p><strong>Q：我的业务旋钮既有连续又有离散怎么办？</strong></p>
+<p>A：框架会走「离散枚举」分支——枚举所有离散组合，连续旋钮取中点（或你在
+<code>SearchStrategy.initial_candidates</code> 里给的先验）。纯连续才走 BO。</p>
+
+<p><strong>Q：质量用连续评分（不是缺陷分类）？</strong></p>
+<p>A：画像里 <code>quality=QualitySpec(kind="score", scale=100.0)</code>，引擎自动用
+<code>ScoreQualityModel</code>（回归），goodness = 评分/scale。</p>
+
+<p><strong>Q：没有过程信号（如注塑）能跑吗？</strong></p>
+<p>A：能。<code>simulator=None</code>，质量模型输入由 <code>FeatureExtractor.build_quality_input</code>
+直接用旋钮+上下文拼成，跳过代理模型。</p>
+
+<p><strong>Q：约束窗口的键必须是信号特征吗？</strong></p>
+<p>A：是的。约束用于「下发前用信号特征校验」（安全网关）。若你的业务无信号，
+约束窗口留空 <code>{}</code>，越界拦截逻辑自动跳过（仍建议在生产里加对象级硬约束）。</p>
+
+<div class="footer">
+  proctune · 通用工艺参数推荐框架 · 本文档由 USAGE.md 转换生成，原 Markdown 文件保持不变。
+</div>
+
+</div>
+</body>
+</html>
