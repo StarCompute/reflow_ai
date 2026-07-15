@@ -44,6 +44,70 @@
     padding:26px 30px; margin:0 0 22px; font-size:32px; line-height:1.55; }
   .card .t { font-weight:800; color:#0e9f6e; font-size:36px; display:block; margin-bottom:6px; }
   .card .big-num { color:#e11d48; font-weight:800; }
+  /* 良率可视化条形图 */
+  .bar { margin:18px 0 4px; }
+  .bar .bl { display:flex; justify-content:space-between; font-size:28px; margin-bottom:8px; color:#475569; }
+  .bar .bl b { color:#1f2328; }
+  .bar .track { position:relative; height:38px; border-radius:19px; background:#e2e8f0; overflow:hidden; }
+  .bar .fill { position:absolute; top:0; left:0; height:100%; border-radius:19px;
+    display:flex; align-items:center; justify-content:flex-end; padding-right:20px;
+    color:#fff; font-size:26px; font-weight:800; }
+  .bar .fill.before { background:linear-gradient(90deg,#94a3b8,#64748b); }
+  .bar .fill.after  { background:linear-gradient(90deg,#1d4ed8,#0e9f6e); }
+  .bar .up { color:#0e9f6e; font-weight:800; font-size:28px; margin-top:10px; display:inline-block; }
+  /* 用前用后对比 */
+  .vs { display:flex; gap:24px; margin:8px 0 30px; }
+  .vs > div { flex:1; border-radius:18px; padding:30px 28px; }
+  .vs .before { background:#fef2f2; border:2px solid #fecaca; }
+  .vs .after  { background:#ecfdf5; border:2px solid #a7f3d0; }
+  .vs h3 { font-size:36px; margin-bottom:20px; }
+  .vs .before h3 { color:#e11d48; }
+  .vs .after h3 { color:#0e9f6e; }
+  .vs ul { list-style:none; }
+  .vs li { font-size:30px; line-height:1.5; padding:12px 0 12px 44px; position:relative; }
+  .vs .before li::before { content:"✕"; position:absolute; left:6px; color:#e11d48; font-weight:800; }
+  .vs .after  li::before { content:"✓"; position:absolute; left:6px; color:#0e9f6e; font-weight:800; }
+  /* 时间线（见效周期） */
+  .tl { position:relative; margin:10px 0 0 30px; padding-left:52px; }
+  .tl::before { content:""; position:absolute; left:14px; top:8px; bottom:8px; width:4px; background:#cbd5e1; }
+  .tl .item { position:relative; margin-bottom:34px; }
+  .tl .item::before { content:""; position:absolute; left:-46px; top:6px; width:26px; height:26px;
+    border-radius:50%; background:#1d4ed8; border:5px solid #dbeafe; }
+  .tl .item .w { font-size:30px; color:#1d4ed8; font-weight:800; margin-bottom:6px; }
+  .tl .item .d { font-size:32px; line-height:1.5; color:#334155; }
+  .tl .item .d b { color:#0e9f6e; }
+  /* 输入→系统→输出 流程图 */
+  .flow { display:flex; align-items:stretch; gap:0; margin:6px 0 30px; }
+  .flow .box { flex:1; border-radius:16px; padding:26px 22px; text-align:center; }
+  .flow .box .t { font-size:30px; font-weight:800; margin-bottom:10px; }
+  .flow .box .d { font-size:27px; line-height:1.45; color:#475569; }
+  .flow .in  { background:#eff6ff; border:2px solid #bfdbfe; }
+  .flow .in  .t { color:#1d4ed8; }
+  .flow .mid { background:linear-gradient(135deg,#1d4ed8,#0e9f6e); color:#fff; display:flex; flex-direction:column; justify-content:center; }
+  .flow .mid .t { color:#fff; }
+  .flow .mid .d { color:#e0f2fe; }
+  .flow .out { background:#ecfdf5; border:2px solid #a7f3d0; }
+  .flow .out .t { color:#0e9f6e; }
+  .flow .arr { flex:none; width:54px; display:flex; align-items:center; justify-content:center; font-size:46px; color:#94a3b8; font-weight:800; }
+  /* 表样示意 */
+  .tbl { border:2px solid #e2e8f0; border-radius:12px; overflow:hidden; margin:8px 0 26px; font-size:26px; }
+  .tbl table { width:100%; border-collapse:collapse; }
+  .tbl th { background:#1d4ed8; color:#fff; padding:14px 16px; text-align:left; font-size:27px; }
+  .tbl td { padding:13px 16px; border-top:1px solid #e2e8f0; color:#334155; }
+  .tbl tr:nth-child(even) td { background:#f8fafc; }
+  .tbl .q { color:#0e9f6e; font-weight:700; }
+  /* 大数字统计条 */
+  .stats { display:flex; gap:22px; margin:6px 0 28px; }
+  .stats > div { flex:1; background:#f1f5f9; border-radius:16px; padding:26px 18px; text-align:center; }
+  .stats .num { font-size:52px; font-weight:800; color:#1d4ed8; line-height:1.1; }
+  .stats .num .u { font-size:30px; }
+  .stats .lbl { font-size:26px; color:#64748b; margin-top:10px; line-height:1.4; }
+  /* 打印/导出：每页一张 */
+  @media print {
+    body { background:#fff; }
+    .slide { page-break-after:always; break-after:page; }
+  }
+  @page { size:1080px 1920px; margin:0; }
   .qa { margin:0 0 34px; }
   .qa .q { font-size:36px; font-weight:800; color:#1d4ed8; margin-bottom:12px; }
   .qa .a { font-size:32px; line-height:1.6; color:#334155; }
@@ -113,6 +177,14 @@
     <p>工厂里很多工序，质量好不好全看参数调到多少——温度、压力、时间、转速、配比……</p>
     <p>过去这些靠老师傅凭经验，换人换产品就容易出问题。</p>
     <p class="lead">现在你把"过去调了什么、结果怎样"的记录交给它，它就能对新产品算出<span class="hl">该用什么参数最稳</span>。</p>
+    <div class="flow">
+      <div class="box in"><div class="t">历史记录表</div><div class="d">调了什么参数 + 产品什么样 + 质量好坏</div></div>
+      <div class="arr">→</div>
+      <div class="box mid"><div class="t">智能推荐系统</div><div class="d">从数据里<br>找出最优规律</div></div>
+      <div class="arr">→</div>
+      <div class="box out"><div class="t">推荐参数</div><div class="d">这次该设多少<br>温度/压力/时间…</div></div>
+    </div>
+    <div class="card"><span class="t">说白了</span>它就是个<span class="hlb">永不离职、越用越懂你厂子</span>的"数字老师傅"，把经验变成可复用的参数表。</div>
   </div>
   <div class="foot">它不替你开机器，只告诉你这次该设多少</div>
 </div>
@@ -124,6 +196,7 @@
     <div class="step"><div class="n">1</div><div class="tx"><b>喂给它过去的生产记录</b><br>调了哪些参数、产品什么样、最后质量好坏。</div></div>
     <div class="step"><div class="n">2</div><div class="tx"><b>它自己找出规律</b><br>什么条件下、什么参数组合能出好货，自动学会。</div></div>
     <div class="step"><div class="n">3</div><div class="tx"><b>下次直接给你答案</b><br>做新产品时，它告诉你"这次建议设 248 度、压力 70、保压 28 秒"，照着设就行。</div></div>
+    <div class="card" style="margin-top:8px;"><span class="t">和"老师傅带徒弟"的区别</span>老师傅会忘、会走、换个班就掉档；系统<span class="hlb">记每一单、永远在线</span>，半夜两点问它也一样答。</div>
   </div>
   <div class="foot">不需要懂人工智能，背后怎么学的你完全不用管</div>
 </div>
@@ -143,7 +216,13 @@
       </div>
     </div>
     <p class="lead" style="margin-top:40px;">用平时的 Excel 表就能填，<span class="hl">几十行数据也能跑</span>，几百行更稳。</p>
-    <p class="muted">质量列写"合格 / 缺陷名"也行，写 0~100 的评分也行。</p>
+    <div class="tbl"><table>
+      <tr><th>料筒温度</th><th>注射压力</th><th>保压时间</th><th>材料</th><th>质量</th></tr>
+      <tr><td>245</td><td>68</td><td>26</td><td>ABS</td><td class="q">合格</td></tr>
+      <tr><td>260</td><td>75</td><td>30</td><td>PP</td><td>短射</td></tr>
+      <tr><td>248</td><td>70</td><td>28</td><td>ABS</td><td class="q">合格</td></tr>
+    </table></div>
+    <p class="muted">质量列写"合格 / 缺陷名"也行，写 0~100 的评分也行。系统自动看懂，不用改格式。</p>
   </div>
   <div class="foot">会用 Excel，就能用这套系统</div>
 </div>
@@ -189,6 +268,11 @@
     <p class="lead">系统把全厂过去<span class="hl">所有的好坏记录</span>都学进去，每一单都算出当前条件下最优的参数组合——不是凭感觉，而是从数据里找规律。</p>
     <p>实际用下来，良率往往能稳定提升<b class="hlb">几个点到十几个点</b>。</p>
     <p class="lead">工业现场最看重的：<span class="hl">少出不良、少报废、直接省钱</span>。</p>
+    <div class="stats">
+      <div><div class="num">+5<span class="u">~15</span></div><div class="lbl">良率提升<br>百分点</div></div>
+      <div><div class="num">7×24</div><div class="lbl">在线不请假<br>不离职</div></div>
+      <div><div class="num">∞</div><div class="lbl">经验<br>可复制</div></div>
+    </div>
   </div>
   <div class="foot">老师傅做到 90 分，系统能稳定推到 95 分</div>
 </div>
@@ -198,7 +282,14 @@
   <div class="hd"><div class="no">08 / 真实量级 ①</div><h2>能提多少？看例子</h2></div>
   <div class="body">
     <div class="card"><span class="t">炼胶（橡胶混炼）</span>良率 <span class="big-num">92% → 96~97%</span>，每 100 批少出 4~5 批废胶；按一班 30 吨算，一天就能省下小一万。</div>
+    <div class="bar"><div class="bl"><b>用系统前</b> 良率 92%</div><div class="track"><div class="fill before" style="width:92%">92%</div></div></div>
+    <div class="bar"><div class="bl"><b>用系统后</b> 良率 97%</div><div class="track"><div class="fill after" style="width:97%">97%</div></div></div>
+    <div class="up">▲ +4~5 个百分点</div>
+
     <div class="card"><span class="t">炼钢（配料与终点控制）</span>成分命中率 <span class="big-num">90% → 95~96%</span>，每 100 炉少 5~6 炉返吹；一炉钢回炉一次损失动辄数万。</div>
+    <div class="bar"><div class="bl"><b>用系统前</b> 命中率 90%</div><div class="track"><div class="fill before" style="width:90%">90%</div></div></div>
+    <div class="bar"><div class="bl"><b>用系统后</b> 命中率 96%</div><div class="track"><div class="fill after" style="width:96%">96%</div></div></div>
+    <div class="up">▲ +5~6 个百分点</div>
   </div>
   <div class="foot">典型量级，实际以你自己的数据为准</div>
 </div>
@@ -208,14 +299,52 @@
   <div class="hd"><div class="no">09 / 真实量级 ②</div><h2>能提多少？看例子</h2></div>
   <div class="body">
     <div class="card"><span class="t">回流焊</span>同产品上，平均良率比手调 <span class="big-num">高 1.5 个点以上</span>，良率波动降低约 <span class="big-num">40%</span>——不仅更好，还更稳，早晚班不再忽高忽低。</div>
+    <div class="stats">
+      <div><div class="num">+1.5<span class="u">%+</span></div><div class="lbl">平均<br>良率提升</div></div>
+      <div><div class="num">-40<span class="u">%</span></div><div class="lbl">良率波动<br>降幅</div></div>
+      <div><div class="num">0</div><div class="lbl">早晚班<br>差异</div></div>
+    </div>
+
     <div class="card"><span class="t">注塑成型</span>短射、飞边等缺陷率 <span class="big-num">5% → 1~2%</span>，不良减半还多，模具损耗和停机调试时间也跟着降。</div>
+    <div class="bar"><div class="bl"><b>用系统前</b> 缺陷率 5%</div><div class="track"><div class="fill before" style="width:50%">5%</div></div></div>
+    <div class="bar"><div class="bl"><b>用系统后</b> 缺陷率 ~1.5%</div><div class="track"><div class="fill after" style="width:15%">~1.5%</div></div></div>
+    <div class="up">▼ 不良减少 70%+</div>
   </div>
   <div class="foot">越用数据越多，系统越准</div>
 </div>
 
-<!-- 11 四个痛点解决 -->
+<!-- 11 一图看懂 用前 vs 用后 -->
 <div class="slide">
-  <div class="hd"><div class="no">10 / 它帮你</div><h2>四个痛点，一次解决</h2></div>
+  <div class="hd"><div class="no">10 / 一图看懂</div><h2>用前 vs 用后，差在哪</h2></div>
+  <div class="body">
+    <div class="vs">
+      <div class="before">
+        <h3>用之前</h3>
+        <ul>
+          <li>参数靠经验，时好时坏</li>
+          <li>老师傅一走，良率掉档</li>
+          <li>换产品从头试，全车间抓瞎</li>
+          <li>出问题找不到原因</li>
+        </ul>
+      </div>
+      <div class="after">
+        <h3>用之后</h3>
+        <ul>
+          <li>系统算参数，次次有据可依</li>
+          <li>经验留数据里，谁用都稳</li>
+          <li>填新任务表，自动反推参数</li>
+          <li>好坏可追溯，越用越准</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card"><span class="t">核心差别</span>不是换设备、换人，而是把<span class="hlb">"凭感觉调"换成"按数据调"</span>——同样的机器，良率稳稳上台阶。</div>
+  </div>
+  <div class="foot">同样的产线，不一样的调法</div>
+</div>
+
+<!-- 12 四个痛点解决 -->
+<div class="slide">
+  <div class="hd"><div class="no">11 / 它帮你</div><h2>四个痛点，一次解决</h2></div>
   <div class="body">
     <ul class="lst good">
       <li><b>良率全面超过老师傅</b>：最大价值，工业最需要的。</li>
@@ -227,9 +356,35 @@
   <div class="foot">把人的经验，变成厂里留得住的资产</div>
 </div>
 
-<!-- 12 常见疑问 -->
+<!-- 13 见效周期 -->
 <div class="slide">
-  <div class="hd"><div class="no">11 / 常见疑问</div><h2>你可能会问</h2></div>
+  <div class="hd"><div class="no">12 / 多久见效</div><h2>从落地到见效，大概这样</h2></div>
+  <div class="body">
+    <div class="tl">
+      <div class="item">
+        <div class="w">第 1 天</div>
+        <div class="d">整理出<b>一张历史记录表</b>（Excel 就行），当天就能跑出第一批推荐。</div>
+      </div>
+      <div class="item">
+        <div class="w">第 1 周</div>
+        <div class="d">照着推荐参数试产几单，<b>对比良率</b>，先在一道工序上验证效果。</div>
+      </div>
+      <div class="item">
+        <div class="w">1 个月</div>
+        <div class="d">新数据回流，模型更新一次，推荐<b>越来越准</b>，波动明显变小。</div>
+      </div>
+      <div class="item">
+        <div class="w">长期</div>
+        <div class="d">经验持续沉淀，<b>新人也能出老师傅的活</b>，良率稳稳站上新台阶。</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">不用大改造，边用边见效</div>
+</div>
+
+<!-- 14 常见疑问 -->
+<div class="slide">
+  <div class="hd"><div class="no">13 / 常见疑问</div><h2>你可能会问</h2></div>
   <div class="body">
     <div class="qa"><div class="q">Q：会不会推荐出设备做不到的参数？</div>
       <div class="a">不会。它只在你历史上出现过的参数范围里找最优，不会给设备达不到的数值。</div></div>
@@ -241,7 +396,22 @@
   <div class="foot">上手门槛低，越用越顺手</div>
 </div>
 
-<!-- 13 结尾 CTA -->
+<!-- 15 开源免费 零成本 -->
+<div class="slide">
+  <div class="hd"><div class="no">14 / 几乎零成本</div><h2>不用买设备，不用请专家</h2></div>
+  <div class="body">
+    <ul class="lst good">
+      <li><b>软件开源免费</b>：项目已在 GitHub 开源，个人使用不花钱。</li>
+      <li><b>不动现有产线</b>：机器、工艺、人都不用换，只换调参数的方式。</li>
+      <li><b>数据现成就有</b>：用平时的生产记录，不必额外上传感器。</li>
+      <li><b>不用懂 AI</b>：表格进、表格出，会用 Excel 就能上手。</li>
+    </ul>
+    <div class="card" style="margin-top:14px;"><span class="t">一句话</span>投入的几乎只是<b class="hlb">整理一张表的时间</b>，换回的是<span class="big-num">看得见的良率和省下的废品钱</span>。</div>
+  </div>
+  <div class="foot">低门槛、低投入、见效快</div>
+</div>
+
+<!-- 16 结尾 CTA -->
 <div class="slide end">
   <div class="kicker">工艺参数智能推荐系统</div>
   <h1>让参数不再靠猜<br>让良率稳稳上台阶</h1>
