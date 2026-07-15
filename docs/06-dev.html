@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>06 开发 · 回流焊 AI 工艺优化系统</title>
+<style>
+  :root{--bg:#0f172a;--card:#1e293b;--line:#334155;--txt:#e2e8f0;--sub:#94a3b8;--accent:#38bdf8;--accent2:#22d3ee;--ok:#34d399;--warn:#fbbf24;--bad:#f87171}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;background:var(--bg);color:var(--txt);line-height:1.75}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(15,23,42,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:12px 24px;display:flex;gap:14px;flex-wrap:wrap;z-index:10}
+  .nav a{font-size:13px;color:var(--sub)} .nav a:hover{color:var(--accent)} .nav .home{color:var(--accent);font-weight:700}
+  .wrap{max-width:1000px;margin:0 auto;padding:40px 24px 80px}
+  h1{font-size:30px;font-weight:800;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{color:var(--sub);margin:10px 0 28px}
+  h2{font-size:21px;margin:34px 0 12px;border-left:4px solid var(--accent);padding-left:12px}
+  h3{font-size:16px;margin:18px 0 6px;color:var(--accent2)}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+  th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+  th{background:var(--card);color:var(--accent);font-weight:700}
+  tr:nth-child(even) td{background:rgba(30,41,59,.5)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin:16px 0}
+  .layer{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--card);border:1px solid var(--line);border-radius:10px;margin:8px 0;font-size:14px}
+  .layer .lv{flex:0 0 90px;font-weight:700;color:var(--accent)}
+  code{background:#0b1220;padding:2px 6px;border-radius:6px;color:var(--accent2);font-size:13px}
+  .prevnext{display:flex;justify-content:space-between;margin-top:50px;border-top:1px solid var(--line);padding-top:20px}
+  .footer{text-align:center;color:var(--sub);font-size:13px;padding:28px;border-top:1px solid var(--line)}
+  .diagram{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin:16px 0}
+  .diagram svg{display:block;width:100%;height:auto}
+  .diagram .cap{color:var(--sub);font-size:13px;text-align:center;margin-top:10px}
+</style>
+</head>
+<body>
+<div id="nav" class="nav"></div>
+<script src="nav.js"></script>
+<div class="wrap">
+  <h1>06 · 开发：系统怎么搭（具体到模块和数据）</h1>
+  <p class="lead">四层架构 + 三张核心表 + 三个模型。小白也能看懂"数据怎么流、模型吃什么"。</p>
+
+  <h2>6.1 系统架构（四层）</h2>
+  <div class="layer"><span class="lv">① 采集层</span> 炉子PLC / 炉温测试仪 / SPI / AOI / X-Ray / MES / 环境传感器</div>
+  <div class="layer"><span class="lv">② 数据层</span> 时序数据库（存曲线）+ 关系库（存BOM/质量/批次）</div>
+  <div class="layer"><span class="lv">③ 模型层</span> 代理模型 + 质量预测模型 + 优化推荐引擎</div>
+  <div class="layer"><span class="lv">④ 应用层</span> Web 看板 + 推荐界面 + 知识库问答 + 下发接口</div>
+
+  <h2>6.1.1 四层架构图</h2>
+  <div class="diagram">
+    <svg viewBox="0 0 640 400" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Microsoft YaHei, sans-serif">
+      <g font-size="13">
+        <rect x="70" y="30" width="480" height="62" rx="12" fill="#1e293b" stroke="#334155"/>
+        <circle cx="40" cy="61" r="16" fill="#38bdf8"/><text x="40" y="66" fill="#06121f" font-size="14" font-weight="700" text-anchor="middle">①</text>
+        <text x="90" y="56" fill="#38bdf8" font-weight="700">采集层</text>
+        <text x="90" y="78" fill="#94a3b8" font-size="12">炉子PLC · 炉温测试仪 · SPI · AOI · X-Ray · MES · 环境传感器</text>
+        <rect x="70" y="112" width="480" height="62" rx="12" fill="#1e293b" stroke="#334155"/>
+        <circle cx="40" cy="143" r="16" fill="#38bdf8"/><text x="40" y="148" fill="#06121f" font-size="14" font-weight="700" text-anchor="middle">②</text>
+        <text x="90" y="138" fill="#38bdf8" font-weight="700">数据层</text>
+        <text x="90" y="160" fill="#94a3b8" font-size="12">时序库(存曲线) + 关系库(存 BOM/质量/批次)，打通板级追溯</text>
+        <rect x="70" y="194" width="480" height="62" rx="12" fill="#1e293b" stroke="#334155"/>
+        <circle cx="40" cy="225" r="16" fill="#38bdf8"/><text x="40" y="230" fill="#06121f" font-size="14" font-weight="700" text-anchor="middle">③</text>
+        <text x="90" y="220" fill="#38bdf8" font-weight="700">模型层</text>
+        <text x="90" y="242" fill="#94a3b8" font-size="12">代理模型 + 质量预测模型 + 参数推荐引擎</text>
+        <rect x="70" y="276" width="480" height="62" rx="12" fill="#1e293b" stroke="#334155"/>
+        <circle cx="40" cy="307" r="16" fill="#38bdf8"/><text x="40" y="312" fill="#06121f" font-size="14" font-weight="700" text-anchor="middle">④</text>
+        <text x="90" y="302" fill="#38bdf8" font-weight="700">应用层</text>
+        <text x="90" y="324" fill="#94a3b8" font-size="12">Web看板 · 推荐界面 · 知识库问答 · 下发接口</text>
+      </g>
+      <g stroke="#38bdf8" stroke-width="2" fill="#38bdf8">
+        <line x1="310" y1="92" x2="310" y2="110"/><polygon points="310,116 305,104 315,104"/>
+        <line x1="310" y1="174" x2="310" y2="192"/><polygon points="310,198 305,186 315,186"/>
+        <line x1="310" y1="256" x2="310" y2="274"/><polygon points="310,280 305,268 315,268"/>
+      </g>
+      <path d="M560,307 C610,307 610,61 560,61" fill="none" stroke="#fbbf24" stroke-width="1.6" stroke-dasharray="6 5"/>
+      <polygon points="560,55 554,67 566,67" fill="#fbbf24"/>
+      <text x="612" y="180" fill="#fbbf24" font-size="11" text-anchor="middle">质量</text>
+      <text x="612" y="196" fill="#fbbf24" font-size="11" text-anchor="middle">反馈</text>
+    </svg>
+    <div class="cap">图 6-1　系统四层架构，向下采集、向上应用，右侧黄线为质量反馈闭环</div>
+  </div>
+
+  <h2>6.2 核心数据表（追溯关键）</h2>
+  <h3>表 A：炉次主表 <code>reflow_run</code></h3>
+  <table><tr><th>字段</th><th>示例</th><th>说明</th></tr>
+    <tr><td>run_id</td><td>R20260714-001</td><td>每次过炉唯一编号</td></tr>
+    <tr><td>oven_id</td><td>OVEN-03</td><td>哪台炉</td></tr>
+    <tr><td>product_id</td><td>PCB-A12</td><td>产品型号</td></tr>
+    <tr><td>lot_id</td><td>LOT-7788</td><td>生产批次</td></tr>
+    <tr><td>chain_speed</td><td>85 cm/min</td><td>链速设定</td></tr>
+    <tr><td>zone1_temp…zone10_temp</td><td>150/170/…/250 ℃</td><td>各温区设定</td></tr>
+    <tr><td>start_time/end_time</td><td>时间戳</td><td>过炉起止</td></tr></table>
+
+  <h3>表 B：实测曲线 <code>profile_data</code></h3>
+  <table><tr><th>字段</th><th>示例</th><th>说明</th></tr>
+    <tr><td>run_id</td><td>R20260714-001</td><td>关联炉次</td></tr>
+    <tr><td>sample_time</td><td>时间戳</td><td>采样时刻</td></tr>
+    <tr><td>tc1_temp…tc6_temp</td><td>25/120/…/248 ℃</td><td>6 个热电偶实测温度</td></tr></table>
+
+  <h3>表 C：质量结果 <code>quality_result</code></h3>
+  <table><tr><th>字段</th><th>示例</th><th>说明</th></tr>
+    <tr><td>lot_id / sn</td><td>LOT-7788 / SN123</td><td>板级追溯</td></tr>
+    <tr><td>aoi_result</td><td>PASS/FAIL</td><td>外观检测</td></tr>
+    <tr><td>xray_void_rate</td><td>12%</td><td>BGA 空洞率</td></tr>
+    <tr><td>defect_type</td><td>虚焊/桥连/立碑</td><td>缺陷分类</td></tr>
+    <tr><td>repair_flag</td><td>0/1</td><td>是否返修</td></tr></table>
+  <div class="card" style="font-size:14px;color:var(--sub)">🧩 小白解释：这三张表通过 <code>run_id / lot_id</code> 串起来，就能回答"这块坏板，当时炉子怎么设的、实际温度曲线长啥样"——这是 AI 学习的原料。</div>
+
+  <h2>6.2.1 数据流转图（三表怎么串）</h2>
+  <div class="diagram">
+    <svg viewBox="0 0 800 260" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Microsoft YaHei, sans-serif">
+      <rect x="20" y="80" width="220" height="120" rx="10" fill="#1e293b" stroke="#38bdf8"/>
+      <text x="36" y="104" fill="#38bdf8" font-weight="700" font-size="13">表A reflow_run（炉次主表）</text>
+      <text x="36" y="126" fill="#94a3b8" font-size="11">run_id, oven_id,</text>
+      <text x="36" y="144" fill="#94a3b8" font-size="11">product_id, lot_id,</text>
+      <text x="36" y="162" fill="#94a3b8" font-size="11">zone_temp, chain_speed</text>
+      <rect x="300" y="20" width="220" height="95" rx="10" fill="#1e293b" stroke="#22d3ee"/>
+      <text x="316" y="44" fill="#22d3ee" font-weight="700" font-size="13">表B profile_data</text>
+      <text x="316" y="66" fill="#94a3b8" font-size="11">run_id, sample_time,</text>
+      <text x="316" y="84" fill="#94a3b8" font-size="11">tc1..tc6_temp</text>
+      <rect x="300" y="150" width="220" height="95" rx="10" fill="#1e293b" stroke="#22d3ee"/>
+      <text x="316" y="174" fill="#22d3ee" font-weight="700" font-size="13">表C quality_result</text>
+      <text x="316" y="196" fill="#94a3b8" font-size="11">lot_id/sn, aoi_result,</text>
+      <text x="316" y="214" fill="#94a3b8" font-size="11">xray_void, defect</text>
+      <g stroke="#34d399" stroke-width="2" fill="#34d399">
+        <line x1="240" y1="140" x2="298" y2="67"/><polygon points="302,63 290,64 296,74"/>
+        <line x1="240" y1="140" x2="298" y2="197"/><polygon points="302,201 290,196 296,206"/>
+      </g>
+      <text x="270" y="100" fill="#34d399" font-size="11" text-anchor="middle">run_id</text>
+      <text x="270" y="185" fill="#34d399" font-size="11" text-anchor="middle">lot_id</text>
+      <rect x="560" y="95" width="220" height="90" rx="10" fill="rgba(56,189,248,.08)" stroke="#334155"/>
+      <text x="576" y="120" fill="#e2e8f0" font-size="12" font-weight="700">三表串联 = AI 原料</text>
+      <text x="576" y="142" fill="#94a3b8" font-size="11">回答：这块坏板，当时</text>
+      <text x="576" y="160" fill="#94a3b8" font-size="11">炉子怎么设、曲线长啥样</text>
+    </svg>
+    <div class="cap">图 6-2　板级追溯链路：用 run_id / lot_id 把"设定→实测→质量"挂到同一块板</div>
+  </div>
+
+  <h2>6.3 从曲线提取"特征"（给模型吃的数据）</h2>
+  <table><tr><th>特征名</th><th>含义</th><th>典型合格区间（无铅）</th></tr>
+    <tr><td>peak_temp</td><td>峰值温度</td><td>235~250 ℃</td></tr>
+    <tr><td>TAL</td><td>液相线(217℃)以上时间</td><td>45~90 秒</td></tr>
+    <tr><td>ramp_up</td><td>升温斜率</td><td>1~3 ℃/秒</td></tr>
+    <tr><td>ramp_down</td><td>降温斜率</td><td>-1 ~ -4 ℃/秒</td></tr>
+    <tr><td>delta_T</td><td>板面最大温差</td><td>&lt; 15 ℃</td></tr>
+    <tr><td>soak_temp</td><td>恒温区平台温度</td><td>150~200 ℃</td></tr></table>
+
+  <h2>6.4 三个核心模型</h2>
+  <div class="card"><h3 style="color:var(--accent)">模型1：工艺代理模型（设定值 → 预测曲线）</h3>
+    <p style="color:var(--sub);font-size:14px">输入 zone_temp、chain_speed、风量 → 输出预测实际曲线。用途：还没真过炉就能猜曲线。方法：物理热模型+数据校正 / 神经网络。</p></div>
+  <div class="card"><h3 style="color:var(--accent)">模型2：质量预测模型（曲线+板+锡膏 → 缺陷概率）</h3>
+    <p style="color:var(--sub);font-size:14px">输入 6 个特征 + 板厚/铜面积/BGA有无/锡膏型号 → 输出虚焊/桥连/立碑/空洞概率。方法：XGBoost / 随机森林（小样本友好、可解释）。<b style="color:var(--ok)">这是替代老师傅"预判风险"的核心。</b></p></div>
+  <div class="card"><h3 style="color:var(--accent)">模型3：参数推荐引擎（新板 → 最优设定）</h3>
+    <p style="color:var(--sub);font-size:14px">输入 新产品BOM+锡膏+工艺窗口约束 → 输出推荐 zone_temp/chain_speed。方法：贝叶斯优化 / 遗传算法。输出同时给"风险提示"和"为什么这么设"（可解释）。</p></div>
+
+  <h2>6.5 开发技术栈建议（小白版）</h2>
+  <table><tr><th>用途</th><th>推荐</th><th>说明</th></tr>
+    <tr><td>数据采集</td><td>Python + OPC UA/Modbus 库</td><td>从设备读数</td></tr>
+    <tr><td>存储</td><td>MySQL(关系) + InfluxDB(曲线时序)</td><td>各司其职</td></tr>
+    <tr><td>建模</td><td>Python + scikit-learn / XGBoost / PyTorch</td><td>主流、免费</td></tr>
+    <tr><td>应用</td><td>Web 前端 + 后端 API</td><td>给工艺员用的界面</td></tr>
+    <tr><td>知识库</td><td>RAG + 开源大模型(如 Qwen)</td><td>工艺问答助手</td></tr></table>
+
+  <h2>6.6 知识库（把老师傅经验存下来）</h2>
+  <div class="card" style="font-size:14px">访谈老师傅，整理成 <b>"场景→做法→原因"</b> 结构化条目，例如：
+    <p style="margin-top:8px;color:var(--txt)">▸ 场景：板子有大面积接地铜箔（热容大）<br>
+    ▸ 做法：回流区温度上调 5~8℃，链速降 5 cm/min<br>
+    ▸ 原因：大铜箔吸热多，峰值温度容易不够导致虚焊</p>
+    <p style="color:var(--sub);margin-top:8px">存入知识库，新人用自然语言提问，系统检索并回答。</p></div>
+
+  <h2>6.7 经验萃取 → 知识库 流程图</h2>
+  <p>老师傅脑子里的"诀窍"怎么变成系统里人人能查的知识？下面这条链路把它固化下来，还能靠新人反馈越改越准。</p>
+  <div class="diagram">
+    <svg viewBox="0 0 820 250" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Microsoft YaHei, sans-serif">
+      <g font-size="12">
+        <rect x="20" y="60" width="150" height="70" rx="10" fill="#1e293b" stroke="#38bdf8"/>
+        <text x="95" y="88" fill="#38bdf8" font-weight="700" text-anchor="middle">① 访谈老师傅</text>
+        <text x="95" y="108" fill="#94a3b8" font-size="10" text-anchor="middle">萃取 tacit 经验</text>
+        <rect x="230" y="60" width="150" height="70" rx="10" fill="#1e293b" stroke="#38bdf8"/>
+        <text x="305" y="86" fill="#38bdf8" font-weight="700" text-anchor="middle">② 结构化条目</text>
+        <text x="305" y="106" fill="#94a3b8" font-size="10" text-anchor="middle">场景→做法→原因</text>
+        <rect x="440" y="60" width="150" height="70" rx="10" fill="#1e293b" stroke="#38bdf8"/>
+        <text x="515" y="88" fill="#38bdf8" font-weight="700" text-anchor="middle">③ 入库 RAG</text>
+        <text x="515" y="108" fill="#94a3b8" font-size="10" text-anchor="middle">向量知识库</text>
+        <rect x="440" y="150" width="150" height="70" rx="10" fill="#1e293b" stroke="#22d3ee"/>
+        <text x="515" y="178" fill="#22d3ee" font-weight="700" text-anchor="middle">④ 新人提问</text>
+        <text x="515" y="198" fill="#94a3b8" font-size="10" text-anchor="middle">自然语言</text>
+        <rect x="230" y="150" width="150" height="70" rx="10" fill="#1e293b" stroke="#22d3ee"/>
+        <text x="305" y="176" fill="#22d3ee" font-weight="700" text-anchor="middle">⑤ 检索+大模型</text>
+        <text x="305" y="196" fill="#94a3b8" font-size="10" text-anchor="middle">给处置建议</text>
+        <rect x="20" y="150" width="150" height="70" rx="10" fill="#1e293b" stroke="#fbbf24"/>
+        <text x="95" y="178" fill="#fbbf24" font-weight="700" text-anchor="middle">⑥ 反馈修正</text>
+        <text x="95" y="198" fill="#94a3b8" font-size="10" text-anchor="middle">标记对错入库</text>
+      </g>
+      <g stroke="#64748b" stroke-width="2" fill="#64748b">
+        <line x1="170" y1="95" x2="228" y2="95"/><polygon points="234,95 220,89 220,101"/>
+        <line x1="380" y1="95" x2="438" y2="95"/><polygon points="444,95 430,89 430,101"/>
+        <line x1="515" y1="130" x2="515" y2="148"/><polygon points="515,154 510,142 520,142"/>
+        <line x1="440" y1="185" x2="382" y2="185"/><polygon points="376,185 390,179 390,191"/>
+        <line x1="230" y1="185" x2="172" y2="185"/><polygon points="166,185 180,179 180,191"/>
+        <line x1="95" y1="150" x2="95" y2="132"/><polygon points="95,126 90,138 100,138"/>
+      </g>
+      <text x="95" y="123" fill="#fbbf24" font-size="10" text-anchor="middle">↑反馈闭环</text>
+    </svg>
+    <div class="cap">图 6-3　老师傅经验固化链路：访谈→结构化→入库→问答→反馈修正，形成可传承的知识资产</div>
+  </div>
+
+  <div class="prevnext">
+    <a href="05-path.html">← 上一章：路径</a>
+    <a href="07-test.html">下一章：测试 →</a>
+  </div>
+</div>
+<div class="footer">回流焊 AI 工艺优化系统 · 准备性文档 v1.0</div>
+</body>
+</html>

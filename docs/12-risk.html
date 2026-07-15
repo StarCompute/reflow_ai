@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>12 风险登记 · 回流焊 AI 工艺优化系统</title>
+<style>
+  :root{--bg:#0f172a;--card:#1e293b;--line:#334155;--txt:#e2e8f0;--sub:#94a3b8;--accent:#38bdf8;--accent2:#22d3ee;--ok:#34d399;--warn:#fbbf24;--bad:#f87171}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;background:var(--bg);color:var(--txt);line-height:1.75}
+  a{color:var(--accent);text-decoration:none}
+  .wrap{max-width:1000px;margin:0 auto;padding:40px 24px 80px}
+  h1{font-size:30px;font-weight:800;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{color:var(--sub);margin:10px 0 28px}
+  h2{font-size:21px;margin:34px 0 12px;border-left:4px solid var(--accent);padding-left:12px}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+  th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+  th{background:var(--card);color:var(--accent);font-weight:700}
+  tr:nth-child(even) td{background:rgba(30,41,59,.5)}
+  .tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:700}
+  .t-h{background:rgba(248,113,113,.18);color:var(--bad);border:1px solid rgba(248,113,113,.35)}
+  .t-m{background:rgba(251,191,36,.18);color:var(--warn);border:1px solid rgba(251,191,36,.35)}
+  .t-l{background:rgba(52,211,153,.18);color:var(--ok);border:1px solid rgba(52,211,153,.35)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin:16px 0}
+  .prevnext{display:flex;justify-content:space-between;margin-top:50px;border-top:1px solid var(--line);padding-top:20px}
+  .footer{text-align:center;color:var(--sub);font-size:13px;padding:28px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+<div id="nav" class="nav"></div>
+<script src="nav.js"></script>
+<div class="wrap">
+  <h1>12 · 风险登记册（含等级与缓解）</h1>
+  <p class="lead">很多人只提"有风险"，这里把每类风险量化等级、写明谁负责、怎么缓解。等级：🔴高 🟡中 🟢低。</p>
+
+  <h2>12.1 风险矩阵总览</h2>
+  <table>
+    <tr><th>ID</th><th>类别</th><th>风险描述</th><th>可能</th><th>影响</th><th>等级</th><th>缓解措施</th><th>责任人</th></tr>
+    <tr><td>R1</td><td>数据</td><td>老回流炉无数据接口，取数困难</td><td>高</td><td>高</td><td><span class="tag t-h">🔴</span></td><td>加装工业网关/边缘采集盒；手动导入炉温测试仪数据兜底</td><td>设备工程师</td></tr>
+    <tr><td>R2</td><td>数据</td><td>板级追溯断链，曲线与质量对不上</td><td>高</td><td>高</td><td><span class="tag t-h">🔴</span></td><td>先用批次(lot)级追溯起步，逐步上 SN 级；MES 改造打条码</td><td>IT/MES</td></tr>
+    <tr><td>R3</td><td>数据</td><td>不良品样本太少，模型学不会</td><td>高</td><td>中</td><td><span class="tag t-m">🟡</span></td><td>仿真数据+迁移学习；聚焦"曲线是否达标"二分类先上手</td><td>算法工程师</td></tr>
+    <tr><td>R4</td><td>数据</td><td>质量标签不准（AOI 误判、人工漏标）</td><td>中</td><td>高</td><td><span class="tag t-m">🟡</span></td><td>抽检复核标签；用 X-Ray/ICT 交叉验证关键缺陷</td><td>工艺工程师</td></tr>
+    <tr><td>R5</td><td>技术</td><td>模型推荐参数导致批量炸板</td><td>低</td><td>极高</td><td><span class="tag t-h">🔴</span></td><td>工艺窗口硬约束+越界100%拦截；试点期只"建议不下发"</td><td>算法+工艺</td></tr>
+    <tr><td>R6</td><td>技术</td><td>设备漂移，模型预测逐渐失真</td><td>中</td><td>中</td><td><span class="tag t-m">🟡</span></td><td>代理模型每月用新实测曲线校正；监控预测误差</td><td>算法工程师</td></tr>
+    <tr><td>R7</td><td>组织</td><td>老师傅抵触，不配合萃取经验</td><td>中</td><td>高</td><td><span class="tag t-m">🟡</span></td><td>明确"辅助不取代"；设采纳激励；让老师傅当评审</td><td>项目经理</td></tr>
+    <tr><td>R8</td><td>组织</td><td>关键人离职，项目断档</td><td>中</td><td>高</td><td><span class="tag t-m">🟡</span></td><td>知识库+RAG 沉淀经验；文档化、双岗备份</td><td>项目经理</td></tr>
+    <tr><td>R9</td><td>进度</td><td>设备改造超预期，拖延整体</td><td>中</td><td>中</td><td><span class="tag t-m">🟡</span></td><td>预算预留10~15%不可预见费；P2并行启动P3</td><td>项目经理</td></tr>
+    <tr><td>R10</td><td>安全</td><td>系统与产线直连被误改参数</td><td>低</td><td>极高</td><td><span class="tag t-h">🔴</span></td><td>网络隔离；下发走审批接口；权限分级</td><td>IT</td></tr>
+    <tr><td>R11</td><td>合规</td><td>客户审厂要求工艺参数可追溯</td><td>中</td><td>中</td><td><span class="tag t-m">🟡</span></td><td>板级数据档案天然满足；保留审计日志</td><td>工艺+IT</td></tr>
+    <tr><td>R12</td><td>投入</td><td>回报不及预期，被叫停</td><td>低</td><td>中</td><td><span class="tag t-l">🟢</span></td><td>先做最小试点证明价值再扩；设明确验收线</td><td>管理层</td></tr>
+  </table>
+
+  <h2>12.2 高风险（🔴）应对要点</h2>
+  <div class="card" style="font-size:14px">
+    <p>▸ <b style="color:var(--bad)">R5 / R10（安全类）</b>：这是红线。任何情况下，AI 都不能绕过工艺窗口直接控炉；试点期"只建议、不下发"，上线后下发也走人工确认+权限审批。</p>
+    <p style="margin-top:8px">▸ <b style="color:var(--bad)">R1 / R2（数据类）</b>：决定项目能否做出来。若 P2 阶段发现追溯打不通，应暂停建模、先解决采集，别硬上模型。</p>
+  </div>
+
+  <div class="prevnext">
+    <a href="11-glossary.html">← 上一章：术语表</a>
+    <a href="13-wbs.html">下一章：WBS/RACI →</a>
+  </div>
+</div>
+<div class="footer">回流焊 AI 工艺优化系统 · 准备性文档 v1.0</div>
+</body>
+</html>

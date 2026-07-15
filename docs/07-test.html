@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>07 测试 · 回流焊 AI 工艺优化系统</title>
+<style>
+  :root{--bg:#0f172a;--card:#1e293b;--line:#334155;--txt:#e2e8f0;--sub:#94a3b8;--accent:#38bdf8;--accent2:#22d3ee;--ok:#34d399;--warn:#fbbf24;--bad:#f87171}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;background:var(--bg);color:var(--txt);line-height:1.75}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(15,23,42,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:12px 24px;display:flex;gap:14px;flex-wrap:wrap;z-index:10}
+  .nav a{font-size:13px;color:var(--sub)} .nav a:hover{color:var(--accent)} .nav .home{color:var(--accent);font-weight:700}
+  .wrap{max-width:980px;margin:0 auto;padding:40px 24px 80px}
+  h1{font-size:30px;font-weight:800;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{color:var(--sub);margin:10px 0 28px}
+  h2{font-size:21px;margin:34px 0 12px;border-left:4px solid var(--accent);padding-left:12px}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+  th,td{border:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}
+  th{background:var(--card);color:var(--accent);font-weight:700}
+  tr:nth-child(even) td{background:rgba(30,41,59,.5)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin:16px 0}
+  .tag{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600}
+  .t-ok{background:rgba(52,211,153,.15);color:var(--ok);border:1px solid rgba(52,211,153,.3)}
+  .t-bad{background:rgba(248,113,113,.15);color:var(--bad);border:1px solid rgba(248,113,113,.3)}
+  .t-warn{background:rgba(251,191,36,.15);color:var(--warn);border:1px solid rgba(251,191,36,.3)}
+  .prevnext{display:flex;justify-content:space-between;margin-top:50px;border-top:1px solid var(--line);padding-top:20px}
+  .footer{text-align:center;color:var(--sub);font-size:13px;padding:28px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+<div id="nav" class="nav"></div>
+<script src="nav.js"></script>
+<div class="wrap">
+  <h1>07 · 测试：怎么证明系统有用、不会害事</h1>
+  <p class="lead">四道关：离线回测、A/B 对比、安全测试、可用性测试，每道都有明确验收线。</p>
+
+  <div class="card">
+    <h2 style="margin-top:0">7.1 离线回测（用历史数据考系统）</h2>
+    <p style="color:var(--sub);font-size:14px">拿过去 3~6 个月历史炉次数据，让模型"盲猜"缺陷，对比真实结果。</p>
+    <table><tr><th>验收指标</th><th>合格线</th></tr>
+      <tr><td>质量预测模型 AUC（区分好坏板能力）</td><td><span class="tag t-ok">≥ 0.85</span></td></tr>
+      <tr><td>召回率（别漏掉坏板）</td><td><span class="tag t-ok">≥ 80%</span></td></tr></table>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">7.2 并行 A/B 对比（不冒险）</h2>
+    <p style="color:var(--sub);font-size:14px">同一产品，一边用老师傅原参数（对照组），一边用 AI 推荐（实验组），连续跑 <b>30 炉以上</b>。</p>
+    <table><tr><th>对比项</th><th>验收线</th></tr>
+      <tr><td>实验组返修率</td><td><span class="tag t-ok">≤ 对照组</span></td></tr>
+      <tr><td>重大质量事故</td><td><span class="tag t-bad">0 起</span></td></tr></table>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">7.3 安全测试（最重要）</h2>
+    <p style="color:var(--sub);font-size:14px">故意给模型"危险输入"（如峰值设到 300℃），验证系统拒绝下发并报警；验证人工一键回退。</p>
+    <table><tr><th>验收项</th><th>合格线</th></tr>
+      <tr><td>任何越界参数拦截率</td><td><span class="tag t-ok">100%</span></td></tr>
+      <tr><td>异常时回退到原参数</td><td><span class="tag t-ok">≤ 1 秒</span></td></tr></table>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">7.4 可用性测试</h2>
+    <p style="color:var(--sub);font-size:14px">找 3 名非老师傅的普通工艺员，用系统调一炉，看能否独立操作。</p>
+    <table><tr><th>验收项</th><th>合格线</th></tr>
+      <tr><td>普通人完成一次正确推荐与下发</td><td><span class="tag t-warn">≤ 30 分钟</span></td></tr></table>
+  </div>
+
+  <div class="prevnext">
+    <a href="06-dev.html">← 上一章：开发</a>
+    <a href="08-implement.html">下一章：实施 →</a>
+  </div>
+</div>
+<div class="footer">回流焊 AI 工艺优化系统 · 准备性文档 v1.0</div>
+</body>
+</html>

@@ -1,0 +1,21 @@
+# 核心依赖（演示可纯此跑通）
+numpy>=1.24
+pandas>=2.0
+scikit-learn>=1.3
+SQLAlchemy>=2.0
+PyYAML>=6.0
+FastAPI>=0.110
+uvicorn>=0.29
+rich>=13.0              # 终端友好输出（彩色日志 / 表格 / 面板）
+
+# 可选生产级替换（按需安装，接口不变）：
+# xgboost>=2.0          # 质量模型生产实现（V2 §6）
+# torch>=2.0            # 代理模型 PINN 实现
+# bayesian-optimization>=1.4   # 推荐引擎生产实现
+# sentence-transformers>=2.5    # 知识库 BGE-M3 Embedding
+# influxdb-client>=1.40  # 真实曲线时序存储
+# pymysql>=1.1           # MySQL 连接
+# mlflow>=2.0            # 模型版本管理
+
+# 测试（可选）
+pytest>=8.0             # 单元测试：pytest tests/ -q

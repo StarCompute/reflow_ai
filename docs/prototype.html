@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>回流焊 AI 工艺优化系统 · 产品原型</title>
+<style>
+  :root{--bg:#0f172a;--card:#1e293b;--line:#334155;--txt:#e2e8f0;--sub:#94a3b8;--accent:#38bdf8;--accent2:#22d3ee;--ok:#34d399;--warn:#fbbf24;--bad:#f87171}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;background:#060b16;color:var(--txt);height:100vh;display:flex;overflow:hidden}
+  /* 侧边导航 */
+  .side{width:230px;background:var(--bg);border-right:1px solid var(--line);padding:22px 14px;display:flex;flex-direction:column;gap:6px;overflow-y:auto}
+  .side h1{font-size:15px;color:var(--accent);margin-bottom:4px;line-height:1.4}
+  .side .sub{font-size:11px;color:var(--sub);margin-bottom:18px}
+  .navbtn{display:block;width:100%;text-align:left;background:transparent;border:1px solid transparent;color:var(--sub);padding:9px 12px;border-radius:9px;font-size:13px;cursor:pointer;transition:.15s}
+  .navbtn:hover{background:var(--card);color:var(--txt)}
+  .navbtn.active{background:linear-gradient(90deg,rgba(56,189,248,.18),transparent);border-color:var(--accent);color:var(--accent);font-weight:700}
+  .navbtn small{display:block;color:var(--sub);font-size:10px;font-weight:400;margin-top:2px}
+  /* 画布 */
+  .stage{flex:1;overflow:auto;padding:26px;display:flex;justify-content:center;align-items:flex-start}
+  .screen{display:none;width:100%;max-width:1040px}
+  .screen.active{display:block;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .bar{display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--line);border-radius:12px 12px 0 0;padding:10px 16px}
+  .bar .dot{width:11px;height:11px;border-radius:50%}
+  .bar .title{font-size:13px;color:var(--sub);margin-left:8px}
+  .win{background:var(--card);border:1px solid var(--line);border-top:none;border-radius:0 0 12px 12px;padding:20px;min-height:560px}
+  .cap{color:var(--sub);font-size:12px;text-align:center;margin-top:14px}
+  /* 通用组件 */
+  .panel{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .panel h3{font-size:13px;color:var(--accent);margin-bottom:12px}
+  .tag{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600}
+  .t-ok{background:rgba(52,211,153,.15);color:var(--ok);border:1px solid rgba(52,211,153,.3)}
+  .t-bad{background:rgba(248,113,113,.15);color:var(--bad);border:1px solid rgba(248,113,113,.3)}
+  .t-warn{background:rgba(251,191,36,.15);color:var(--warn);border:1px solid rgba(251,191,36,.3)}
+  .t-info{background:rgba(56,189,248,.15);color:var(--accent);border:1px solid rgba(56,189,248,.3)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;border:none;border-radius:9px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer}
+  .btn-ok{background:var(--ok);color:#06121f}
+  .btn-ghost{background:var(--bg);border:1px solid var(--line);color:var(--txt)}
+  .btn-accent{background:var(--accent);color:#06121f}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+  .kv{display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:1px dashed var(--line)}
+  .kv span:first-child{color:var(--sub)}
+  .kv span:last-child{color:var(--txt)}
+  .meter{height:9px;background:var(--bg);border-radius:6px;overflow:hidden}
+  .meter > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th,td{border:1px solid var(--line);padding:7px 9px;text-align:left}
+  th{background:var(--bg);color:var(--accent)}
+  .pill-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  /* 弹窗 & 提示 */
+  .modal-mask{position:fixed;inset:0;background:rgba(2,6,23,.7);display:none;align-items:center;justify-content:center;z-index:50}
+  .modal-mask.show{display:flex}
+  .modal{background:var(--card);border:1px solid var(--accent);border-radius:14px;padding:22px;width:340px;box-shadow:0 20px 50px rgba(0,0,0,.5)}
+  .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--card);border:1px solid var(--ok);color:var(--ok);padding:10px 18px;border-radius:10px;font-size:13px;opacity:0;transition:.25s;pointer-events:none;z-index:60}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="side">
+  <h1>回流焊 AI 系统<br>产品原型</h1>
+  <div class="sub">v0.3 线框 · 可点击切换</div>
+  <button class="navbtn active" onclick="show(0)">① 辅助推荐<small>工艺员 · 核心</small></button>
+  <button class="navbtn" onclick="show(1)">② 数据源接入<small>IT / 实施</small></button>
+  <button class="navbtn" onclick="show(2)">③ 模型训练评估<small>算法工程师</small></button>
+  <button class="navbtn" onclick="show(3)">④ 实时监控看板<small>主管 / 运维</small></button>
+  <button class="navbtn" onclick="show(4)">⑤ 知识库问答<small>新人 / 工艺员</small></button>
+  <button class="navbtn" onclick="show(5)">⑥ 质量反馈分析<small>质量工程师</small></button>
+</div>
+
+<div class="stage">
+  <!-- ① 辅助推荐 -->
+  <section class="screen active" id="s0">
+    <div class="bar"><span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span><span class="title">回流焊 AI 辅助推荐 · OVEN-03</span></div>
+    <div class="win">
+      <div class="grid3">
+        <div class="panel">
+          <h3>① 当前板信息</h3>
+          <div class="kv"><span>产品</span><span>PCB-A12</span></div>
+          <div class="kv"><span>锡膏</span><span>SAC305</span></div>
+          <div class="kv"><span>BOM</span><span>BGA×3 / QFN×2</span></div>
+          <div class="kv"><span>铜箔</span><span>大接地(热容大)</span></div>
+          <div class="kv"><span>历史返修</span><span>2.1%</span></div>
+          <div class="kv"><span>上次峰值</span><span>238℃</span></div>
+        </div>
+        <div class="panel">
+          <h3>② AI 推荐参数</h3>
+          <div class="kv"><span>温区1-3 预热</span><span class="t-info tag">180→150℃</span></div>
+          <div class="kv"><span>温区4-6 恒温</span><span class="t-info tag">170→160℃</span></div>
+          <div class="kv"><span>温区7-8 回流</span><span class="t-ok tag">255→261℃</span></div>
+          <div class="kv"><span>温区9-10 冷却</span><span class="t-info tag">240→200℃</span></div>
+          <div class="kv"><span>链速</span><span>85 cm/min</span></div>
+          <div class="kv"><span>峰值目标</span><span>245℃</span></div>
+          <div class="panel" style="margin-top:12px;border-color:var(--warn);background:rgba(251,191,36,.08)">
+            <div class="tag t-warn">⚠ 风险提示</div>
+            <p style="font-size:11px;color:var(--warn);margin-top:6px">大铜箔：峰值易不足→虚焊。建议回流区 +6℃，链速 -5。</p>
+          </div>
+        </div>
+        <div class="panel" style="border-color:var(--ok);background:rgba(52,211,153,.06)">
+          <h3 style="color:var(--ok)">④ 本系统 vs 老师傅</h3>
+          <div class="kv"><span>推荐良率</span><span class="t-ok tag">98.9%</span></div>
+          <div class="kv"><span>老师傅手调(同板)</span><span>97.1%</span></div>
+          <div class="kv"><span>良率波动 σ</span><span class="t-ok tag">↓ 42%</span></div>
+          <div class="kv"><span>首炉即合格</span><span class="t-ok tag">92%</span></div>
+          <p style="font-size:11px;color:var(--sub);margin-top:8px">系统不仅学会老师傅，更在<b style="color:var(--ok)">稳定、全局寻优、可解释、自进化</b>上更好；人保留"采纳"兜底权。</p>
+        </div>
+        <div class="panel">
+          <h3>③ 曲线预览</h3>
+          <svg viewBox="0 0 260 130" style="width:100%;height:auto">
+            <line x1="10" y1="60" x2="250" y2="60" stroke="#f87171" stroke-dasharray="4 4"/>
+            <polyline fill="none" stroke="#38bdf8" stroke-width="2.5" points="10,95 50,80 90,68 130,52 170,46 210,62 250,92"/>
+            <text x="10" y="120" fill="#94a3b8" font-size="9">预测峰值 245℃ · TAL 60s</text>
+          </svg>
+          <div class="pill-row">
+            <button class="btn btn-ok" id="btnAdopt" onclick="openAdopt()">✓ 采纳并下发</button>
+            <button class="btn btn-ghost" onclick="toast('已打开微调面板（演示）')">微调</button>
+            <button class="btn btn-ghost" onclick="toast('已忽略本次推荐（演示）')">忽略</button>
+          </div>
+          <div id="adoptStatus" style="font-size:11px;color:var(--ok);margin-top:8px"></div>
+        </div>
+      </div>
+      <p class="cap">图 ①　辅助推荐界面（HTML 原型）：四栏布局，含"系统 vs 老师傅"对比——不仅学到位，更在稳定/寻优/可解释/自进化上超越；人点"采纳并下发"才生效</p>
+    </div>
+  </section>
+
+  <!-- ② 数据源接入 -->
+  <section class="screen" id="s1">
+    <div class="bar"><span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span><span class="title">数据源接入配置 · 采集层</span></div>
+    <div class="win">
+      <div style="display:grid;grid-template-columns:280px 1fr;gap:16px">
+        <div class="panel">
+          <h3>① 数据源清单</h3>
+          <div class="kv"><span><i style="color:#34d399">●</i> 炉子 PLC</span><span class="t-ok tag">已连</span></div>
+          <div class="kv"><span><i style="color:#34d399">●</i> 炉温测试仪</span><span class="t-warn tag">配置中</span></div>
+          <div class="kv"><span><i style="color:#34d399">●</i> SPI</span><span class="t-ok tag">已连</span></div>
+          <div class="kv"><span><i style="color:#34d399">●</i> AOI</span><span class="t-ok tag">已连</span></div>
+          <div class="kv"><span><i style="color:#f87171">●</i> X-Ray</span><span class="t-bad tag">未连</span></div>
+          <div class="kv"><span><i style="color:#34d399">●</i> MES</span><span class="t-ok tag">已连</span></div>
+          <div class="kv"><span><i style="color:#34d399">●</i> 环境传感器</span><span class="t-ok tag">已连</span></div>
+        </div>
+        <div class="panel">
+          <h3>② 配置：炉温测试仪</h3>
+          <div class="kv"><span>连接地址</span><span>192.168.1.45:502 (Modbus)</span></div>
+          <div class="kv"><span>采集频率</span><span>每炉次 1 次 + 实时 1Hz</span></div>
+          <div class="kv"><span>字段映射</span><span>tc1..tc6 → profile_data</span></div>
+          <div class="kv"><span>状态</span><span class="t-warn tag">● 待测试</span></div>
+          <div class="pill-row">
+            <button class="btn btn-ghost">测试连接</button>
+            <button class="btn btn-ok">保存</button>
+          </div>
+          <p style="font-size:11px;color:var(--sub);margin-top:14px">提示：X-Ray 未连接，缺陷真值将缺失，建议先接再训练。<br>关键源（PLC/AOI/MES）接不通则不允许进入下一步。</p>
+        </div>
+      </div>
+      <p class="cap">图 ②　数据源接入配置界面（HTML 原型）：左侧清单看连通状态，右侧配连接与字段映射</p>
+    </div>
+  </section>
+
+  <!-- ③ 模型训练评估 -->
+  <section class="screen" id="s2">
+    <div class="bar"><span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span><span class="title">模型训练与评估 · 模型层</span></div>
+    <div class="win">
+      <div style="display:grid;grid-template-columns:260px 300px 1fr;gap:16px">
+        <div class="panel">
+          <h3>① 数据与特征</h3>
+          <p style="font-size:11px;color:var(--sub)">数据集</p>
+          <div class="kv" style="border:none"><span>reflow_2024H1</span><span>3.2万炉</span></div>
+          <p style="font-size:11px;color:var(--sub);margin-top:8px">特征</p>
+          <div class="pill-row">
+            <span class="t-info tag">峰值温度</span><span class="t-info tag">TAL</span><span class="t-info tag">升温斜率</span>
+            <span class="t-info tag">链速</span><span class="t-info tag">元件密度</span><span class="tag" style="opacity:.4">湿度</span>
+          </div>
+          <p style="font-size:11px;color:var(--sub);margin-top:8px">算法</p>
+          <div class="pill-row"><span class="t-ok tag">● XGBoost</span><span class="tag" style="opacity:.4">○ 随机森林</span><span class="tag" style="opacity:.4">○ 神经网络</span></div>
+          <button class="btn btn-accent" style="margin-top:14px;width:100%">开始训练</button>
+        </div>
+        <div class="panel">
+          <h3>② 训练过程</h3>
+          <p style="font-size:12px">Epoch 8/10 · 进度 80%</p>
+          <div class="meter" style="margin:8px 0"><i style="width:80%"></i></div>
+          <svg viewBox="0 0 260 90" style="width:100%;height:auto">
+            <polyline fill="none" stroke="#22d3ee" stroke-width="2.5" points="10,70 50,60 90,64 130,44 170,40 210,26 250,34"/>
+          </svg>
+          <p style="font-size:11px;color:var(--sub)">loss 下降曲线</p>
+          <div class="kv"><span>验证集 AUC</span><span>0.91</span></div>
+          <div class="kv"><span>预计剩余</span><span>约 40 秒</span></div>
+        </div>
+        <div class="panel">
+          <h3>③ 评估报告</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div class="panel" style="text-align:center"><div style="font-size:18px;color:var(--ok);font-weight:700">AUC 0.91</div><div style="font-size:10px;color:var(--sub)">≥0.85 ✓</div></div>
+            <div class="panel" style="text-align:center"><div style="font-size:18px;color:var(--ok);font-weight:700">召回 0.86</div><div style="font-size:10px;color:var(--sub)">≥0.80 ✓</div></div>
+            <div class="panel" style="text-align:center"><div style="font-size:18px;color:var(--ok);font-weight:700">精确 0.88</div></div>
+            <div class="panel" style="text-align:center"><div style="font-size:18px;color:var(--ok);font-weight:700">F1 0.87</div></div>
+          </div>
+          <p style="font-size:11px;color:var(--sub);margin:12px 0 6px">混淆矩阵（测试集）</p>
+          <table style="text-align:center">
+            <tr><th></th><th>预测良</th><th>预测坏</th></tr>
+            <tr><td><b>实际良</b></td><td style="color:var(--ok)">892</td><td style="color:var(--warn)">38</td></tr>
+            <tr><td><b>实际坏</b></td><td style="color:var(--warn)">54</td><td style="color:var(--ok)">16</td></tr>
+          </table>
+          <button class="btn btn-ok" style="margin-top:12px;width:100%">发布为候选模型 v0.3</button>
+        </div>
+      </div>
+      <p class="cap">图 ③　模型训练与评估界面（HTML 原型）：选特征/算法→看训练→评估指标与混淆矩阵过线后发布</p>
+    </div>
+  </section>
+
+  <!-- ④ 实时监控看板 -->
+  <section class="screen" id="s3">
+    <div class="bar"><span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span><span class="title">实时监控看板 · 应用层</span></div>
+    <div class="win">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px">
+        <div class="panel" style="text-align:center"><div style="font-size:12px;color:var(--sub)">今日过炉</div><div style="font-size:24px;font-weight:700">320</div></div>
+        <div class="panel" style="text-align:center;border-color:var(--ok)"><div style="font-size:12px;color:var(--sub)">综合良率</div><div style="font-size:24px;font-weight:700;color:var(--ok)">98.7%</div></div>
+        <div class="panel" style="text-align:center;border-color:var(--accent)"><div style="font-size:12px;color:var(--sub)">AI 采纳率</div><div style="font-size:24px;font-weight:700;color:var(--accent)">82%</div></div>
+        <div class="panel" style="text-align:center;border-color:var(--bad)"><div style="font-size:12px;color:var(--sub)">异常拦截</div><div style="font-size:24px;font-weight:700;color:var(--bad)">3</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 300px;gap:16px">
+        <div class="panel">
+          <h3>① 各线实时状态</h3>
+          <table>
+            <tr><th>炉号</th><th>产品</th><th>状态</th><th>良率</th></tr>
+            <tr><td>OVEN-01</td><td>PCB-A12</td><td class="t-ok tag">正常</td><td style="color:var(--ok)">99.1%</td></tr>
+            <tr><td>OVEN-02</td><td>PCB-B07</td><td class="t-ok tag">正常</td><td style="color:var(--ok)">98.4%</td></tr>
+            <tr style="background:rgba(248,113,113,.1)"><td>OVEN-03</td><td>PCB-C21</td><td class="t-bad tag">⚠ 偏移</td><td style="color:var(--bad)">95.2%</td></tr>
+            <tr><td>OVEN-04</td><td>PCB-A12</td><td class="t-ok tag">正常</td><td style="color:var(--ok)">99.0%</td></tr>
+            <tr><td>OVEN-05</td><td>PCB-D03</td><td class="t-ok tag">正常</td><td style="color:var(--ok)">98.9%</td></tr>
+          </table>
+          <svg viewBox="0 0 520 70" style="width:100%;height:auto;margin-top:12px">
+            <polyline fill="none" stroke="#38bdf8" stroke-width="2.5" points="10,50 80,44 150,32 220,26 290,40 360,54 430,60 510,52"/>
+          </svg>
+          <p style="font-size:10px;color:var(--sub)">OVEN-03 实时炉温曲线</p>
+        </div>
+        <div class="panel" style="border-color:var(--bad)">
+          <h3 style="color:var(--bad)">② 告警 (3)</h3>
+          <div style="border:1px solid rgba(248,113,113,.3);border-radius:8px;padding:8px;margin-bottom:8px;font-size:11px">
+            <div style="color:var(--bad)">● OVEN-03 峰值偏低</div><div style="color:var(--sub)">10:42 · 疑似虚焊风险</div></div>
+          <div style="border:1px solid rgba(251,191,36,.3);border-radius:8px;padding:8px;margin-bottom:8px;font-size:11px">
+            <div style="color:var(--warn)">● AOI 检出桥连↑</div><div style="color:var(--sub)">09:15 · PCB-B07 批次</div></div>
+          <div style="border:1px solid rgba(251,191,36,.3);border-radius:8px;padding:8px;font-size:11px">
+            <div style="color:var(--warn)">● 链速波动</div><div style="color:var(--sub)">08:50 · OVEN-01 微抖</div></div>
+          <p style="font-size:10px;color:var(--sub);margin-top:8px">点击告警 → 跳转该炉次反馈页</p>
+        </div>
+      </div>
+      <p class="cap">图 ④　实时监控看板（HTML 原型）：顶部 KPI + 各线状态表 + 实时曲线 + 右侧告警</p>
+    </div>
+  </section>
+
+  <!-- ⑤ 知识库问答 -->
+  <section class="screen" id="s4">
+    <div class="bar"><span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span><span class="title">工艺知识库问答 · 应用层</span></div>
+    <div class="win">
+      <div style="display:grid;grid-template-columns:200px 1fr;gap:16px">
+        <div class="panel">
+          <h3>① 知识分类</h3>
+          <div style="font-size:12px;color:var(--accent);margin:6px 0">▾ 虚焊</div>
+          <div style="font-size:12px;color:var(--sub);padding-left:12px">· 峰值不足<br>· 升温过快</div>
+          <div style="font-size:12px;color:var(--sub);margin:6px 0">▸ 桥连</div>
+          <div style="font-size:12px;color:var(--sub);margin:6px 0">▸ 立碑</div>
+          <div style="font-size:12px;color:var(--sub);margin:6px 0">▸ 锡珠</div>
+          <div style="font-size:12px;color:var(--sub);margin:6px 0">▸ 规范文档</div>
+        </div>
+        <div class="panel" style="display:flex;flex-direction:column">
+          <h3>② 对话</h3>
+          <div id="chatMsgs" style="display:flex;flex-direction:column">
+          <div style="background:#334155;border-radius:10px;padding:10px;font-size:12px;align-self:flex-end;max-width:70%">BGA 区域老虚焊，怎么调？</div>
+          <div style="background:rgba(56,189,248,.1);border:1px solid var(--accent);border-radius:10px;padding:10px;font-size:12px;margin-top:10px;max-width:85%">
+            BGA 热容大，建议：①回流区峰值 +6~8℃；②链速 -5cm/min 延长 TAL；③检查 BGA 下方开窗/锡量。先小批量验证再全量。
+            <div style="color:var(--accent2);font-size:10px;margin-top:6px">📎 来源：经验#E017(老师傅) · 规范 SOP-回流-04</div>
+          </div>
+          <div style="background:#334155;border-radius:10px;padding:10px;font-size:12px;align-self:flex-end;max-width:70%;margin-top:10px">回流区已经最高温了还虚焊？</div>
+          </div>
+          <div style="flex:1"></div>
+          <div style="display:flex;gap:8px;margin-top:14px">
+            <input id="qaInput" style="flex:1;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:9px 12px;color:var(--txt);font-size:12px" placeholder="问问老师傅…（输入问题，Enter 发送）" onkeydown="if(event.key==='Enter')sendQA()">
+            <button class="btn btn-accent" onclick="sendQA()">发送</button>
+          </div>
+        </div>
+      </div>
+      <p class="cap">图 ⑤　知识库问答界面（HTML 原型）：左侧分类检索，中间对话式提问，答案带引用来源</p>
+    </div>
+  </section>
+
+  <!-- ⑥ 质量反馈分析 -->
+  <section class="screen" id="s5">
+    <div class="bar"><span class="dot" style="background:#f87171"></span><span class="dot" style="background:#fbbf24"></span><span class="dot" style="background:#34d399"></span><span class="title">质量反馈与异常分析 · 反馈闭环</span></div>
+    <div class="win">
+      <div style="display:grid;grid-template-columns:220px 1fr 240px;gap:16px">
+        <div class="panel">
+          <h3>① 异常炉次</h3>
+          <div style="border:1px solid var(--bad);border-radius:8px;padding:8px;font-size:12px;margin-bottom:8px;background:rgba(248,113,113,.1)">OVEN-03 #2407 <span class="t-bad tag">⚠</span></div>
+          <div style="border:1px solid var(--line);border-radius:8px;padding:8px;font-size:12px;margin-bottom:8px">OVEN-02 #2405</div>
+          <div style="border:1px solid var(--line);border-radius:8px;padding:8px;font-size:12px;margin-bottom:8px">OVEN-05 #2403</div>
+          <div style="border:1px solid var(--line);border-radius:8px;padding:8px;font-size:12px">OVEN-01 #2401</div>
+          <p style="font-size:10px;color:var(--sub);margin-top:10px">筛选：<span class="t-bad tag">虚焊</span> <span class="tag" style="opacity:.4">桥连</span><br>周期：近 7 天</p>
+        </div>
+        <div class="panel">
+          <h3>② 曲线对比 (OVEN-03 #2407)</h3>
+          <svg viewBox="0 0 420 200" style="width:100%;height:auto">
+            <line x1="20" y1="60" x2="400" y2="60" stroke="#fbbf24" stroke-dasharray="3 3"/>
+            <line x1="20" y1="120" x2="400" y2="120" stroke="#1e293b"/>
+            <line x1="20" y1="170" x2="400" y2="170" stroke="#1e293b"/>
+            <polyline fill="none" stroke="#34d399" stroke-width="2.5" points="20,150 80,130 140,110 200,90 260,80 320,100 400,130"/>
+            <polyline fill="none" stroke="#f87171" stroke-width="2.5" stroke-dasharray="5 4" points="20,165 80,150 140,135 200,118 260,112 320,140 400,165"/>
+          </svg>
+          <p style="font-size:10px;color:var(--sub)">标准窗口(绿) vs 实测(红虚)</p>
+          <div class="t-bad tag" style="margin-top:8px">⚠ 峰值 230℃ 低于窗口下限 235℃</div>
+          <div class="t-bad tag" style="margin-top:6px">⚠ TAL 仅 38s（要求 45~90s）</div>
+          <p style="font-size:11px;color:var(--sub);margin-top:6px">→ 大铜箔吸热，回流区热量不足</p>
+        </div>
+        <div class="panel" style="border-color:var(--warn)">
+          <h3 style="color:var(--warn)">③ 原因 & 反馈</h3>
+          <p style="font-size:10px;color:var(--sub)">AI 推测原因</p>
+          <div style="border:1px solid var(--warn);border-radius:8px;padding:8px;font-size:11px;margin:6px 0">回流区温偏低 + 链速偏快 → 峰值/TAL 不足<br><span style="color:var(--accent2)">置信度 0.78</span></div>
+          <p style="font-size:10px;color:var(--sub)">实际处置（人工填）</p>
+          <div style="border:1px solid var(--line);border-radius:8px;padding:8px;font-size:11px;margin:6px 0">回流区 +6℃ 已修复</div>
+          <div class="pill-row">
+            <button class="btn btn-ok">✓ 对</button>
+            <button class="btn btn-ghost">✗ 错</button>
+          </div>
+          <p style="font-size:9px;color:var(--sub);margin-top:8px">标记后自动回灌训练集</p>
+        </div>
+      </div>
+      <p class="cap">图 ⑥　质量反馈与异常分析界面（HTML 原型）：实测曲线叠标准窗口定位偏移，标记对错回灌模型</p>
+    </div>
+  </section>
+</div>
+
+<!-- 采纳确认弹窗 -->
+<div class="modal-mask" id="adoptMask">
+  <div class="modal">
+    <h3 style="color:var(--accent);margin-bottom:10px">确认下发参数？</h3>
+    <p style="font-size:12px;color:var(--sub);margin-bottom:8px">将把以下推荐参数写入 OVEN-03 控制器：</p>
+    <div class="kv"><span>回流区峰值</span><span>261℃</span></div>
+    <div class="kv"><span>链速</span><span>85 cm/min</span></div>
+    <div class="kv"><span>预热 / 恒温</span><span>150 / 160℃</span></div>
+    <p style="font-size:11px;color:var(--warn);margin:10px 0">⚠ 下发后炉子将按此运行，请确认无误。</p>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:6px">
+      <button class="btn btn-ghost" onclick="closeAdopt()">取消</button>
+      <button class="btn btn-ok" onclick="confirmAdopt()">确认下发</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+  function show(i){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.querySelectorAll('.navbtn').forEach(b=>b.classList.remove('active'));
+    document.getElementById('s'+i).classList.add('active');
+    document.querySelectorAll('.navbtn')[i].classList.add('active');
+  }
+  /* 采纳确认弹窗 */
+  function openAdopt(){document.getElementById('adoptMask').classList.add('show')}
+  function closeAdopt(){document.getElementById('adoptMask').classList.remove('show')}
+  function confirmAdopt(){
+    closeAdopt();
+    const b=document.getElementById('btnAdopt');
+    b.disabled=true;b.textContent='✓ 已下发';b.style.opacity=.6;
+    document.getElementById('adoptStatus').textContent='✓ 已于 '+new Date().toLocaleTimeString('zh-CN')+' 下发至 OVEN-03，进入影子运行。';
+    toast('参数已下发 ✓');
+  }
+  /* toast 提示 */
+  let toastTimer;
+  function toast(msg){
+    const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+    clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),1800);
+  }
+  /* 知识库问答：回车/点击发送 */
+  const qaAnswers=[
+    {k:['虚焊','不足','峰值'],a:'虚焊多因峰值温度不足或 TAL 过短。建议：①回流区峰值 +6~8℃；②链速 -5cm/min；③检查大铜箔/接地散热。',src:'经验#E017 · SOP-回流-04'},
+    {k:['桥连','连锡'],a:'桥连常因峰值过高/链速过慢导致过量塌陷，或锡膏印刷偏厚。建议：①回流峰值 -3~5℃；②检查钢网开窗与印刷厚度。',src:'经验#E023 · SOP-回流-07'},
+    {k:['立碑','偏移'],a:'立碑多因两端受热不均/焊盘不对称。建议：①减小升温斜率；②检查元件两端焊盘尺寸一致性。',src:'经验#E031 · SOP-回流-09'},
+    {k:['锡珠','锡球'],a:'锡珠常因升温过快助焊剂飞溅或湿度超标。建议：①预热区 150~170℃ 延长停留；②来料/PCB 湿度管控 ≤40%RH。',src:'经验#E045 · SOP-回流-11'}
+  ];
+  function sendQA(){
+    const inp=document.getElementById('qaInput');const q=inp.value.trim();if(!q)return;
+    const box=document.getElementById('chatMsgs');
+    const u=document.createElement('div');
+    u.style.cssText='background:#334155;border-radius:10px;padding:10px;font-size:12px;align-self:flex-end;max-width:70%;margin-top:10px';
+    u.textContent=q;box.appendChild(u);
+    const hit=qaAnswers.find(x=>x.k.some(k=>q.includes(k)));
+    const a=hit?hit.a:'已记录您的问题。一般建议先核对炉温曲线是否落在标准窗口内（峰值 235~250℃、TAL 45~90s），再对比 AOI/SPI 缺陷分布定位根因。';
+    const src=hit?hit.src:'经验库 · SOP-回流';
+    const r=document.createElement('div');
+    r.style.cssText='background:rgba(56,189,248,.1);border:1px solid var(--accent);border-radius:10px;padding:10px;font-size:12px;margin-top:10px;max-width:85%';
+    r.innerHTML=a+'<div style="color:var(--accent2);font-size:10px;margin-top:6px">📎 来源：'+src+'</div>';
+    box.appendChild(r);
+    inp.value='';
+    box.scrollIntoView({behavior:'smooth',block:'end'});
+  }
+</script>
+</body>
+</html>

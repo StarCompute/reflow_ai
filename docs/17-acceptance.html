@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>17 验收/立项 · 回流焊 AI 工艺优化系统</title>
+<style>
+  :root{--bg:#0f172a;--card:#1e293b;--line:#334155;--txt:#e2e8f0;--sub:#94a3b8;--accent:#38bdf8;--accent2:#22d3ee;--ok:#34d399;--warn:#fbbf24;--bad:#f87171}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;background:var(--bg);color:var(--txt);line-height:1.75}
+  a{color:var(--accent);text-decoration:none}
+  .wrap{max-width:1000px;margin:0 auto;padding:40px 24px 80px}
+  h1{font-size:30px;font-weight:800;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{color:var(--sub);margin:10px 0 28px}
+  h2{font-size:21px;margin:34px 0 12px;border-left:4px solid var(--accent);padding-left:12px}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+  th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+  th{background:var(--card);color:var(--accent);font-weight:700}
+  tr:nth-child(even) td{background:rgba(30,41,59,.5)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin:16px 0}
+  .chk{color:var(--sub);font-size:14px}
+  .charter{background:linear-gradient(135deg,rgba(56,189,248,.12),rgba(34,211,238,.08));border:1px solid var(--accent);border-radius:16px;padding:24px;margin:16px 0}
+  .charter h3{color:var(--accent);margin:0 0 12px;font-size:20px}
+  .kv{display:flex;gap:10px;margin:6px 0;font-size:14px}
+  .kv .k{flex:0 0 120px;color:var(--sub)}
+  .kv .v{color:var(--txt)}
+  .prevnext{display:flex;justify-content:space-between;margin-top:50px;border-top:1px solid var(--line);padding-top:20px}
+  .footer{text-align:center;color:var(--sub);font-size:13px;padding:28px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+<div id="nav" class="nav"></div>
+<script src="nav.js"></script>
+<div class="wrap">
+  <h1>17 · 验收标准总表 + 立项一页纸</h1>
+  <p class="lead">把前面所有量化目标收敛成一张可打勾的验收单，并给老板一份一页纸立项书。</p>
+
+  <h2>17.1 验收标准总表（试点结案用）</h2>
+  <table>
+    <tr><th>类别</th><th>验收项</th><th>合格线</th><th>验证方式</th></tr>
+    <tr><td>数据</td><td>板级追溯打通率</td><td><span class="tag" style="background:rgba(52,211,153,.15);color:var(--ok);border:1px solid rgba(52,211,153,.3);padding:2px 9px;border-radius:999px">100%</span></td><td>抽 50 炉核对关联</td></tr>
+    <tr><td>数据</td><td>历史数据集时长</td><td>≥ 3 个月</td><td>查库</td></tr>
+    <tr><td>模型</td><td>质量预测 AUC</td><td>≥ 0.85</td><td>离线回测</td></tr>
+    <tr><td>模型</td><td>缺陷召回率</td><td>≥ 80%</td><td>离线回测</td></tr>
+    <tr><td>效果</td><td>AI 建议采纳率</td><td>≥ 80%</td><td>运行日志</td></tr>
+    <tr><td>效果</td><td>试点返修率</td><td>3.0% → ≤ 2.0%</td><td>A/B 对比</td></tr>
+    <tr><td>效果</td><td>换线首炉合格率</td><td>≥ 70%</td><td>统计</td></tr>
+    <tr><td>安全</td><td>越界参数拦截率</td><td>100%</td><td>注入测试</td></tr>
+    <tr><td>安全</td><td>异常回退耗时</td><td>≤ 1 秒</td><td>演练</td></tr>
+    <tr><td>可用</td><td>普通人独立操作</td><td>≤ 30 分钟</td><td>可用性测试</td></tr>
+    <tr><td>知识</td><td>经验条目入库</td><td>≥ 30 条</td><td>查知识库</td></tr>
+  </table>
+
+  <h2>17.2 立项一页纸（直接给老板看）</h2>
+  <div class="charter">
+    <h3>📋 回流焊 AI 工艺参数优化系统 · 立项申请</h3>
+    <div class="kv"><div class="k">项目背景</div><div class="v">回流焊质量高度依赖老师傅经验，存在难招、波动大、换线慢、经验随人走四大痛点。</div></div>
+    <div class="kv"><div class="k">项目目标</div><div class="v">用"数据+AI"沉淀调参能力，6 个月内试点线返修率 3.0%→≤2.0%，AI 建议采纳率≥80%。</div></div>
+    <div class="kv"><div class="k">方案概要</div><div class="v">采集层→数据层→模型层（代理/预测/推荐）→应用层；先"辅助推荐"后"闭环自动"。</div></div>
+    <div class="kv"><div class="k">投入预算</div><div class="v">约 40~95 万元（含 10~15% 不可预见费）。</div></div>
+    <div class="kv"><div class="k">预期收益</div><div class="v">示例工厂年省返修成本约 72 万元，6~12 个月回本；并降低对个别人的依赖。</div></div>
+    <div class="kv"><div class="k">关键风险</div><div class="v">数据追溯打通（高）、安全红线（高，已设硬约束+人工确认）。</div></div>
+    <div class="kv"><div class="k">团队</div><div class="v">项目经理 1 + 工艺 1~2 + 设备 1 + 算法 1~2 + IT 1 + 管理层 sponsor 1。</div></div>
+    <div class="kv"><div class="k">里程碑</div><div class="v">P0立项(3周) → P1工艺梳理(8周) → P2采集打通(12周) → P3建模(18周) → P4测试(22周) → P5上线(24周)。</div></div>
+    <div class="kv"><div class="k">申请事项</div><div class="v"><b style="color:var(--accent)">批准立项、拨付预算、指定 sponsor、组建跨职能团队。</b></div></div>
+  </div>
+
+  <h2>17.3 结案清单（试点结束时勾选）</h2>
+  <div class="card">
+    <p class="chk">□ 验收标准总表 11 项全部达标</p>
+    <p class="chk">□ 产出《试点总结报告》（效果/收益/问题/推广建议）</p>
+    <p class="chk">□ 管理层评审通过，决定是否推广</p>
+    <p class="chk">□ 知识库与数据飞轮机制移交运维</p>
+  </div>
+
+  <div class="prevnext">
+    <a href="16-training.html">← 上一章：培训/FAQ</a>
+    <a href="index.html">🏠 返回首页</a>
+  </div>
+</div>
+<div class="footer">回流焊 AI 工艺优化系统 · 准备性文档 v1.0</div>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>05 路径 · 回流焊 AI 工艺优化系统</title>
+<style>
+  :root{--bg:#0f172a;--card:#1e293b;--line:#334155;--txt:#e2e8f0;--sub:#94a3b8;--accent:#38bdf8;--accent2:#22d3ee;--ok:#34d399;--warn:#fbbf24;--bad:#f87171}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;background:var(--bg);color:var(--txt);line-height:1.75}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(15,23,42,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:12px 24px;display:flex;gap:14px;flex-wrap:wrap;z-index:10}
+  .nav a{font-size:13px;color:var(--sub)} .nav a:hover{color:var(--accent)} .nav .home{color:var(--accent);font-weight:700}
+  .wrap{max-width:980px;margin:0 auto;padding:40px 24px 80px}
+  h1{font-size:30px;font-weight:800;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{color:var(--sub);margin:10px 0 28px}
+  h2{font-size:21px;margin:34px 0 12px;border-left:4px solid var(--accent);padding-left:12px}
+  .step{display:flex;gap:16px;margin:14px 0;align-items:flex-start}
+  .step .n{flex:0 0 46px;height:46px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#06121f;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:18px}
+  .step .body{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 18px;flex:1}
+  .step .body h3{margin:0 0 4px;font-size:16px;color:var(--accent2)}
+  .step .body p{margin:0;color:var(--sub);font-size:14px}
+  .now{display:inline-block;background:rgba(52,211,153,.15);color:var(--ok);border:1px solid rgba(52,211,153,.3);border-radius:999px;padding:2px 10px;font-size:12px;font-weight:600;margin-left:8px}
+  .prevnext{display:flex;justify-content:space-between;margin-top:50px;border-top:1px solid var(--line);padding-top:20px}
+  .footer{text-align:center;color:var(--sub);font-size:13px;padding:28px;border-top:1px solid var(--line)}
+  .diagram{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin:16px 0}
+  .diagram svg{display:block;width:100%;height:auto}
+  .diagram .cap{color:var(--sub);font-size:13px;text-align:center;margin-top:10px}
+</style>
+</head>
+<body>
+<div id="nav" class="nav"></div>
+<script src="nav.js"></script>
+<div class="wrap">
+  <h1>05 · 路径：技术演进 5 步走</h1>
+  <p class="lead">不要一步到位全自动，按成熟度逐级演进，本项目试点只做到「阶段3」。</p>
+
+  <div class="step"><div class="n">1</div><div class="body"><h3>数据化</h3><p>系统只记录：设定值 + 实测曲线 + 质量结果。人照常调炉。信任级别：无（纯记录）。</p></div></div>
+  <div class="step"><div class="n">2</div><div class="body"><h3>建模</h3><p>离线预测：这条曲线会不会出缺陷。人看报告。信任级别：低（参考）。</p></div></div>
+  <div class="step"><div class="n">3</div><div class="body"><h3>辅助推荐 <span class="now">← 本项目做到这</span></h3><p>给新板推荐参数 + 风险提示，<b>人确认/微调后下发</b>。信任级别：中（人把关）。</p></div></div>
+  <div class="step"><div class="n">4</div><div class="body"><h3>闭环自动</h3><p>自动下发 + 实时微调补偿设备漂移。人监督、异常处理。信任级别：高（系统主导）。</p></div></div>
+  <div class="step"><div class="n">5</div><div class="body"><h3>数字孪生</h3><p>上线前仿真验证曲线再下发。信任级别：最高。</p></div></div>
+
+  <h2>5.1 各阶段对照表</h2>
+  <table style="width:100%;border-collapse:collapse;margin-top:14px;font-size:14px">
+    <tr><th>阶段</th><th>系统做什么</th><th>人做什么</th></tr>
+    <tr><td>1 数据化</td><td>只记录数据</td><td>照常调炉</td></tr>
+    <tr><td>2 建模</td><td>离线预测缺陷</td><td>看报告</td></tr>
+    <tr><td>3 辅助</td><td>给建议+风险提示</td><td><b>确认/微调后下发</b></td></tr>
+    <tr><td>4 闭环</td><td>自动下发+实时微调</td><td>监督、异常处理</td></tr>
+    <tr><td>5 孪生</td><td>仿真验证曲线</td><td>审核仿真结论</td></tr>
+  </table>
+
+  <h2>5.2 演进路径图（横向看成熟度）</h2>
+  <div class="diagram">
+    <svg viewBox="0 0 820 210" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Microsoft YaHei, sans-serif">
+      <g font-size="13">
+        <rect x="20" y="55" width="130" height="95" rx="12" fill="#1e293b" stroke="#334155"/>
+        <text x="85" y="92" fill="#38bdf8" text-anchor="middle" font-weight="700">① 数据化</text>
+        <text x="85" y="116" fill="#94a3b8" text-anchor="middle" font-size="11">只记录数据</text>
+        <text x="85" y="134" fill="#94a3b8" text-anchor="middle" font-size="11">人照常调炉</text>
+        <rect x="175" y="55" width="130" height="95" rx="12" fill="#1e293b" stroke="#334155"/>
+        <text x="240" y="92" fill="#38bdf8" text-anchor="middle" font-weight="700">② 建模</text>
+        <text x="240" y="116" fill="#94a3b8" text-anchor="middle" font-size="11">离线预测缺陷</text>
+        <text x="240" y="134" fill="#94a3b8" text-anchor="middle" font-size="11">人看报告</text>
+        <rect x="330" y="55" width="130" height="95" rx="12" fill="rgba(52,211,153,.12)" stroke="#34d399" stroke-width="2"/>
+        <text x="395" y="90" fill="#34d399" text-anchor="middle" font-weight="700">③ 辅助推荐</text>
+        <text x="395" y="112" fill="#cbd5e1" text-anchor="middle" font-size="11">给建议+风险</text>
+        <text x="395" y="130" fill="#cbd5e1" text-anchor="middle" font-size="11">人确认下发</text>
+        <rect x="485" y="55" width="130" height="95" rx="12" fill="#1e293b" stroke="#334155"/>
+        <text x="550" y="92" fill="#38bdf8" text-anchor="middle" font-weight="700">④ 闭环自动</text>
+        <text x="550" y="116" fill="#94a3b8" text-anchor="middle" font-size="11">自动下发</text>
+        <text x="550" y="134" fill="#94a3b8" text-anchor="middle" font-size="11">实时微调</text>
+        <rect x="640" y="55" width="130" height="95" rx="12" fill="#1e293b" stroke="#334155"/>
+        <text x="705" y="92" fill="#38bdf8" text-anchor="middle" font-weight="700">⑤ 数字孪生</text>
+        <text x="705" y="116" fill="#94a3b8" text-anchor="middle" font-size="11">仿真验证</text>
+        <text x="705" y="134" fill="#94a3b8" text-anchor="middle" font-size="11">再下发</text>
+      </g>
+      <g fill="#64748b">
+        <polygon points="172,102 158,95 158,109"/>
+        <polygon points="327,102 313,95 313,109"/>
+        <polygon points="482,102 468,95 468,109"/>
+        <polygon points="637,102 623,95 623,109"/>
+      </g>
+      <text x="395" y="184" fill="#34d399" font-size="12" text-anchor="middle">↑ 本项目试点目标做到这里（阶段③），不一步到位</text>
+    </svg>
+    <div class="cap">图 5-1　技术成熟度逐级演进，箭头方向 = 自动化程度递增</div>
+  </div>
+
+  <div class="prevnext">
+    <a href="04-plan.html">← 上一章：计划</a>
+    <a href="06-dev.html">下一章：开发 →</a>
+  </div>
+</div>
+<div class="footer">回流焊 AI 工艺优化系统 · 准备性文档 v1.0</div>
+</body>
+</html>

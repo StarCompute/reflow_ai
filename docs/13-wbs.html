@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>13 WBS/RACI · 回流焊 AI 工艺优化系统</title>
+<style>
+  :root{--bg:#0f172a;--card:#1e293b;--line:#334155;--txt:#e2e8f0;--sub:#94a3b8;--accent:#38bdf8;--accent2:#22d3ee;--ok:#34d399;--warn:#fbbf24;--bad:#f87171}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;background:var(--bg);color:var(--txt);line-height:1.75}
+  a{color:var(--accent);text-decoration:none}
+  .wrap{max-width:1000px;margin:0 auto;padding:40px 24px 80px}
+  h1{font-size:30px;font-weight:800;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{color:var(--sub);margin:10px 0 28px}
+  h2{font-size:21px;margin:34px 0 12px;border-left:4px solid var(--accent);padding-left:12px}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+  th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+  th{background:var(--card);color:var(--accent);font-weight:700}
+  tr:nth-child(even) td{background:rgba(30,41,59,.5)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin:16px 0}
+  .r{color:var(--bad);font-weight:700}.a{color:var(--ok);font-weight:700}.c{color:var(--warn);font-weight:700}.i{color:var(--sub)}
+  .prevnext{display:flex;justify-content:space-between;margin-top:50px;border-top:1px solid var(--line);padding-top:20px}
+  .footer{text-align:center;color:var(--sub);font-size:13px;padding:28px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+<div id="nav" class="nav"></div>
+<script src="nav.js"></script>
+<div class="wrap">
+  <h1>13 · 工作分解（WBS）+ 责任矩阵（RACI）</h1>
+  <p class="lead">把项目拆成可干活的任务，并明确每个任务"谁负责、谁批准、咨询谁、知会谁"。</p>
+
+  <h2>13.1 WBS 任务清单（试点期）</h2>
+  <table>
+    <tr><th>WBS</th><th>任务</th><th>主要交付物</th><th>工期</th><th>主责角色</th></tr>
+    <tr><td>1.1</td><td>立项与范围确认</td><td>本文档、目标承诺书</td><td>1~2 周</td><td>项目经理</td></tr>
+    <tr><td>1.2</td><td>组建跨职能团队</td><td>团队成员与分工表</td><td>1 周</td><td>项目经理</td></tr>
+    <tr><td>2.1</td><td>梳理工艺窗口与曲线标准</td><td>工艺窗口标准文档</td><td>2~3 周</td><td>工艺工程师</td></tr>
+    <tr><td>2.2</td><td>萃取老师傅经验</td><td>经验结构化条目≥30条</td><td>3~4 周</td><td>工艺工程师</td></tr>
+    <tr><td>2.3</td><td>盘点数据源与接口</td><td>数据源清单+接口方案</td><td>2 周</td><td>设备+IT</td></tr>
+    <tr><td>3.1</td><td>设备联网/采集改造</td><td>实时取数通道</td><td>4~6 周</td><td>设备工程师</td></tr>
+    <tr><td>3.2</td><td>板级追溯打通</td><td>run_id/lot_id 关联链路</td><td>3~4 周</td><td>IT/MES</td></tr>
+    <tr><td>3.3</td><td>历史数据入库</td><td>结构化数据集≥3个月</td><td>2~3 周</td><td>IT</td></tr>
+    <tr><td>4.1</td><td>特征工程与数据字典</td><td>特征表+数据字典</td><td>2 周</td><td>算法工程师</td></tr>
+    <tr><td>4.2</td><td>代理模型开发</td><td>设定→曲线模型</td><td>3~4 周</td><td>算法工程师</td></tr>
+    <tr><td>4.3</td><td>质量预测模型开发</td><td>曲线→缺陷概率模型</td><td>4~5 周</td><td>算法工程师</td></tr>
+    <tr><td>4.4</td><td>参数推荐引擎开发</td><td>新板推荐接口</td><td>3~4 周</td><td>算法工程师</td></tr>
+    <tr><td>4.5</td><td>Web 看板与知识库</td><td>可用人机界面</td><td>3~4 周</td><td>算法+IT</td></tr>
+    <tr><td>5.1</td><td>离线回测</td><td>回测报告(AUC≥0.85)</td><td>2 周</td><td>算法工程师</td></tr>
+    <tr><td>5.2</td><td>A/B 现场对比</td><td>≥30炉对比报告</td><td>3~4 周</td><td>工艺+算法</td></tr>
+    <tr><td>5.3</td><td>安全与可用性测试</td><td>测试报告</td><td>1~2 周</td><td>全员</td></tr>
+    <tr><td>6.1</td><td>影子模式试运行</td><td>运行记录</td><td>2 周</td><td>工艺</td></tr>
+    <tr><td>6.2</td><td>确认模式上线+培训</td><td>上线系统+培训记录</td><td>2~3 周</td><td>工艺+IT</td></tr>
+    <tr><td>6.3</td><td>持续监控与迭代</td><td>月度迭代报告</td><td>长期</td><td>全员</td></tr>
+  </table>
+
+  <h2>13.2 RACI 责任矩阵</h2>
+  <p style="color:var(--sub);font-size:14px">R=负责执行　A=批准　C=被咨询　I=被告知</p>
+  <table>
+    <tr><th>任务\角色</th><th>项目经理</th><th>工艺工程师</th><th>设备工程师</th><th>算法工程师</th><th>IT/MES</th><th>管理层</th></tr>
+    <tr><td>立项范围</td><td class="a">A</td><td class="c">C</td><td class="i">I</td><td class="i">I</td><td class="i">I</td><td class="r">R</td></tr>
+    <tr><td>工艺窗口梳理</td><td class="i">I</td><td class="a">A/R</td><td class="c">C</td><td class="i">I</td><td class="i">I</td><td class="i">I</td></tr>
+    <tr><td>经验萃取</td><td class="c">C</td><td class="a">A/R</td><td class="i">I</td><td class="c">C</td><td class="i">I</td><td class="i">I</td></tr>
+    <tr><td>设备联网</td><td class="i">I</td><td class="c">C</td><td class="a">A/R</td><td class="i">I</td><td class="c">C</td><td class="i">I</td></tr>
+    <tr><td>追溯打通</td><td class="i">I</td><td class="c">C</td><td class="c">C</td><td class="i">I</td><td class="a">A/R</td><td class="i">I</td></tr>
+    <tr><td>建模开发</td><td class="i">I</td><td class="c">C</td><td class="i">I</td><td class="a">A/R</td><td class="c">C</td><td class="i">I</td></tr>
+    <tr><td>测试验收</td><td class="r">R</td><td class="a">A</td><td class="c">C</td><td class="r">R</td><td class="c">C</td><td class="i">I</td></tr>
+    <tr><td>上线实施</td><td class="r">R</td><td class="a">A</td><td class="c">C</td><td class="r">R</td><td class="r">R</td><td class="i">I</td></tr>
+    <tr><td>预算决策</td><td class="r">R</td><td class="i">I</td><td class="i">I</td><td class="i">I</td><td class="i">I</td><td class="a">A</td></tr>
+  </table>
+
+  <div class="prevnext">
+    <a href="12-risk.html">← 上一章：风险登记</a>
+    <a href="14-datadict.html">下一章：数据字典 →</a>
+  </div>
+</div>
+<div class="footer">回流焊 AI 工艺优化系统 · 准备性文档 v1.0</div>
+</body>
+</html>

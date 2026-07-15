@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>技术方案 V2 · 回流焊 AI 工艺优化系统</title>
+<style>
+:root{--bg:#0f172a;--card:#1e293b;--line:#334155;--txt:#e2e8f0;--sub:#94a3b8;--accent:#38bdf8;--accent2:#22d3ee;--ok:#34d399;--warn:#fbbf24;--bad:#f87171;--purple:#a78bfa}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;background:var(--bg);color:var(--txt);line-height:1.78}
+a{color:var(--accent);text-decoration:none}
+.wrap{max-width:1140px;margin:0 auto;padding:44px 28px 80px}
+h1{font-size:28px;font-weight:800;background:linear-gradient(90deg,var(--accent),var(--accent2),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent}
+.badge{display:inline-block;background:var(--accent);color:#06121f;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:800;letter-spacing:.5px;margin-left:10px;vertical-align:middle}
+.lead{color:var(--sub);margin:12px 0 34px;font-size:15px}
+h2{font-size:22px;margin:46px 0 14px;border-left:4px solid var(--accent);padding-left:12px;scroll-margin-top:20px}
+h3{font-size:17px;margin:22px 0 8px;color:var(--accent2)}
+h4{font-size:14.5px;margin:16px 0 6px;color:var(--accent)}
+p{font-size:14px;color:var(--txt);margin:6px 0}
+code{background:#0b1220;padding:2px 7px;border-radius:5px;color:var(--accent2);font-size:13px}
+pre{background:#060b16;border:1px solid var(--line);border-radius:11px;padding:16px;overflow:auto;font-size:13px;color:#cbd5e1;line-height:1.7;margin:12px 0}
+pre .kw{color:#fbbf24}pre .cm{color:#64748b}pre .str{color:#34d399}pre .fn{color:#a78bfa}pre .num{color:#f87171}pre .op{color:#38bdf8}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+th,td{border:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}
+th{background:var(--card);color:var(--accent);font-weight:700;white-space:nowrap}
+tr:nth-child(even) td{background:rgba(30,41,59,.5)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px;margin:18px 0;font-size:14px}
+.card.warn{border-color:var(--warn);border-left:4px solid var(--warn)}
+.card.ok{border-color:var(--ok);border-left:4px solid var(--ok);background:rgba(52,211,153,.05)}
+.diagram{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin:18px 0}
+.diagram svg{display:block;width:100%;height:auto}
+.diagram .cap{color:var(--sub);font-size:13px;text-align:center;margin-top:12px}
+.tag{display:inline-block;padding:2px 10px;border-radius:999px;font-size:11.5px;font-weight:600}
+.t-ok{background:rgba(52,211,153,.15);color:var(--ok);border:1px solid rgba(52,211,153,.3)}
+.t-warn{background:rgba(251,191,36,.15);color:var(--warn);border:1px solid rgba(251,191,36,.3)}
+.t-bad{background:rgba(248,113,113,.15);color:var(--bad);border:1px solid rgba(248,113,113,.3)}
+.t-info{background:rgba(56,189,248,.15);color:var(--accent);border:1px solid rgba(56,189,248,.3)}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+.compare>div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.compare .win{border-color:var(--ok);border-left:4px solid var(--ok)}
+.toc{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 24px;margin:18px 0;columns:3;column-gap:20px}
+.toc a{display:block;font-size:13px;padding:3.5px 0;color:var(--sub)}
+.toc a:hover{color:var(--accent)}
+.kpi{display:grid;grid-template-columns:repeat(5,1fr);gap:11px;margin:16px 0}
+.kpi .box{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px;text-align:center}
+.kpi .n{font-size:21px;font-weight:800;color:var(--accent)}
+.kpi .l{font-size:11px;color:var(--sub);margin-top:4px}
+.prevnext{display:flex;justify-content:space-between;margin-top:60px;border-top:1px solid var(--line);padding-top:22px;gap:14px}
+.footer{text-align:center;color:var(--sub);font-size:13px;padding:30px;border-top:1px solid var(--line)}
+ul,ol{margin:6px 0 6px 22px}
+li{margin:5px 0;font-size:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>回流焊 AI 工艺优化系统 &middot; 详细技术方案<span class="badge">V2</span></h1>
+  <p class="lead">版本 V2.0 &middot; 2026-07-14 &middot; 工程深度版 —— 从架构到代码级细节，面向研发/算法/运维/架构师。<br>V1→V2 升级：新增 SQL DDL、完整 API Schema、部署拓扑、生产级算法实现、监控体系与 CI/CD 工作流。</p>
+
+  <div class="toc">
+    <a href="#s1">1. 概述与设计原则</a>
+    <a href="#s2">2. 总体架构</a>
+    <a href="#s3">3. 部署拓扑</a>
+    <a href="#s4">4. 数据库设计(SQL)</a>
+    <a href="#s5">5. 特征工程</a>
+    <a href="#s6">6. 模型层设计</a>
+    <a href="#s7">7. 推荐引擎算法</a>
+    <a href="#s8">8. 知识库RAG</a>
+    <a href="#s9">9. API完整设计</a>
+    <a href="#s10">10. 监控与可观测</a>
+    <a href="#s11">11. 安全架构</a>
+    <a href="#s12">12. 测试策略</a>
+    <a href="#s13">13. CI/CD工作流</a>
+    <a href="#s14">14. 实施与里程碑</a>
+    <a href="#s15">15. 超越老师傅</a>
+  </div>
+
+  <!-- ================ 1 ================ -->
+  <h2 id="s1">1. 概述与设计原则</h2>
+  <div class="card">
+    <p><b>要解决的问题：</b>回流焊炉有 7~10 个独立温区、链速、风量等多维设定参数。一条 3 温区×2 梯度×链速的搜索空间约 10⁶ 量级。老师傅凭经验在其中"盲调"，效果因人而异、早晚班波动 1~3% 良率、换线平均试错 2~4 小时、经验不可传承。</p>
+    <p style="margin-top:8px"><b>核心命题：</b>把"调炉"从<b style="color:var(--warn)">以人为主的经验手艺</b>变成<b style="color:var(--ok)">以数据+模型驱动的系统工程</b>。系统先"学会"老师傅，再在<b style="color:var(--accent)">稳定、全局寻优、可解释、自进化</b>四项能力上系统性超越。</p>
+  </div>
+
+  <div class="kpi">
+    <div class="box"><div class="n">4</div><div class="l">系统分层</div></div>
+    <div class="box"><div class="n">3</div><div class="l">核心模型</div></div>
+    <div class="box"><div class="n">4</div><div class="l">数据库表</div></div>
+    <div class="box"><div class="n">9</div><div class="l">REST API</div></div>
+    <div class="box"><div class="n">9个月</div><div class="l">总工期</div></div>
+  </div>
+
+  <h4>设计原则</h4>
+  <table>
+    <tr><th style="width:130px">原则</th><th>内容</th></tr>
+    <tr><td>数据主权</td><td>所有数据（曲线、质量、知识库）100% 本地存储，不出厂，不上云</td></tr>
+    <tr><td>人始终在环</td><td>任何对炉子设定值的修改必须由人点"采纳并下发"后执行，系统只建议、不自动改</td></tr>
+    <tr><td>渐进演进</td><td>数据化→建模→辅助推荐→闭环自动→数字孪生，每阶段独立交付，不一步到位</td></tr>
+    <tr><td>安全红线不可越</td><td>任何推荐参数越出工艺窗口 100% 硬拦截 + 报警；异常一键回退</td></tr>
+    <tr><td>可解释必输出</td><td>每次推荐必须附带 SHAP 归因或特征重要性，工艺员能看懂"为什么这么设"</td></tr>
+    <tr><td>开源优先</td><td>模型、数据库、知识库 LLM 全部选择开源方案（自有部署），零供应商锁定</td></tr>
+    <tr><td>可观测</td><td>从采集到下发全链路 Metrics + Trace + Log 覆盖，故障 5 分钟内定位</td></tr>
+  </table>
+
+  <!-- ================ 2 ================ -->
+  <h2 id="s2">2. 总体架构</h2>
+  <p>四层 + 两竖（安全管控竖线 + 可观测性竖线）。数据纵向流动，质量反馈横向闭环。</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 920 520" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,Microsoft YaHei,sans-serif">
+      <defs>
+        <linearGradient id="gGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#38bdf8"/><stop offset="100%" stop-color="#22d3ee"/></linearGradient>
+      </defs>
+      <!-- 四层 -->
+      <rect x="30" y="40" width="720" height="76" rx="10" fill="#1e293b" stroke="url(#gGrad)" stroke-width="1.5"/>
+      <text x="50" y="68" fill="#38bdf8" font-size="15" font-weight="700">① 采集层</text>
+      <text x="50" y="90" fill="#94a3b8" font-size="11">炉子PLC (OPC UA/Modbus) · 炉温测试仪 · SPI · AOI · X-Ray · MES · 环境传感器</text>
+
+      <rect x="30" y="136" width="720" height="76" rx="10" fill="#1e293b" stroke="url(#gGrad)" stroke-width="1.5"/>
+      <text x="50" y="164" fill="#38bdf8" font-size="15" font-weight="700">② 数据层</text>
+      <text x="50" y="186" fill="#94a3b8" font-size="11">InfluxDB (时序/曲线) · MySQL (关系/质量/BOM) · pgvector (知识库向量) · Redis (缓存/会话)</text>
+
+      <rect x="30" y="232" width="720" height="76" rx="10" fill="#1e293b" stroke="url(#gGrad)" stroke-width="1.5"/>
+      <text x="50" y="260" fill="#38bdf8" font-size="15" font-weight="700">③ 模型层</text>
+      <text x="50" y="282" fill="#94a3b8" font-size="11">代理模型(PyTorch/GP) · 质量预测(XGBoost) · 推荐引擎(BayesOpt) · SHAP 解释 · 特征计算</text>
+
+      <rect x="30" y="328" width="720" height="76" rx="10" fill="#1e293b" stroke="url(#gGrad)" stroke-width="1.5"/>
+      <text x="50" y="356" fill="#38bdf8" font-size="15" font-weight="700">④ 应用层</text>
+      <text x="50" y="378" fill="#94a3b8" font-size="11">Web 前端(Vue+ECharts) · FastAPI 网关 · 知识库RAG(Qwen本地) · 下发审批服务</text>
+
+      <!-- 层间箭头 -->
+      <g stroke="#38bdf8" stroke-width="1.8" fill="#38bdf8">
+        <line x1="390" y1="116" x2="390" y2="134"/><polygon points="390,140 384,130 396,130"/>
+        <line x1="390" y1="212" x2="390" y2="230"/><polygon points="390,236 384,226 396,226"/>
+        <line x1="390" y1="308" x2="390" y2="326"/><polygon points="390,332 384,322 396,322"/>
+      </g>
+
+      <!-- 质量反馈闭环 -->
+      <polyline points="760,366 840,366 840,78 760,78" fill="none" stroke="#fbbf24" stroke-width="1.8" stroke-dasharray="7 5"/>
+      <polygon points="760,72 754,82 766,82" fill="#fbbf24"/>
+      <text x="860" y="220" fill="#fbbf24" font-size="12" text-anchor="middle" transform="rotate(90,860,220)">质量反馈闭环（数据飞轮）</text>
+
+      <!-- 安全管控竖线 -->
+      <rect x="20" y="40" width="6" height="364" rx="3" fill="#f87171" opacity="0.5"/>
+      <text x="20" y="440" fill="#f87171" font-size="10" text-anchor="middle">安全硬拦截 · 越界100%阻断</text>
+
+      <!-- 可观测竖线 -->
+      <rect x="784" y="40" width="6" height="364" rx="3" fill="#a78bfa" opacity="0.5"/>
+      <text x="787" y="440" fill="#a78bfa" font-size="10" text-anchor="middle">Prometheus · Grafana · ELK · Jaeger</text>
+
+      <!-- 底部三大数据流 -->
+      <rect x="30" y="440" width="220" height="52" rx="8" fill="#0b1220" stroke="#334155"/>
+      <text x="140" y="462" fill="#38bdf8" font-size="11" text-anchor="middle">炉子→采集层：1Hz 实时流</text>
+      <text x="140" y="480" fill="#64748b" font-size="10" text-anchor="middle">OPC UA / Modbus TCP</text>
+
+      <rect x="270" y="440" width="220" height="52" rx="8" fill="#0b1220" stroke="#334155"/>
+      <text x="380" y="462" fill="#22d3ee" font-size="11" text-anchor="middle">数据层→模型层：特征计算</text>
+      <text x="380" y="480" fill="#64748b" font-size="10" text-anchor="middle">每炉次触发 / 批量重训 每周</text>
+
+      <rect x="510" y="440" width="220" height="52" rx="8" fill="#0b1220" stroke="#334155"/>
+      <text x="620" y="462" fill="#34d399" font-size="11" text-anchor="middle">应用层→炉子：下发审批流</text>
+      <text x="620" y="480" fill="#64748b" font-size="10" text-anchor="middle">人确认 → 网关中转 → PLC写入</text>
+    </svg>
+    <div class="cap">图 1 总体架构 V2：数据纵向四层流动，右侧质量反馈横向闭环，左侧安全硬拦截竖线，右侧可观测竖线全覆盖</div>
+  </div>
+
+  <!-- ================ 3 ================ -->
+  <h2 id="s3">3. 部署拓扑</h2>
+  <p>工控网与办公网物理隔离，中间经单向网闸/安全网关中转。系统主体部署在工控侧，仅 Web 前端通过网关暴露到办公网。</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 900 340" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,Microsoft YaHei,sans-serif">
+      <!-- 办公网 -->
+      <rect x="10" y="20" width="880" height="130" rx="10" fill="none" stroke="#334155" stroke-dasharray="5 4"/>
+      <text x="360" y="16" fill="#94a3b8" font-size="12" text-anchor="middle">办公网 (192.168.x.0/24)</text>
+      <!-- 浏览器 -->
+      <rect x="80" y="50" width="100" height="50" rx="8" fill="#1e293b" stroke="#38bdf8"/>
+      <text x="130" y="75" fill="#38bdf8" font-size="11" text-anchor="middle">👤 工艺员</text>
+      <text x="130" y="92" fill="#64748b" font-size="9" text-anchor="middle">浏览器访问 Web</text>
+      <rect x="230" y="50" width="100" height="50" rx="8" fill="#1e293b" stroke="#38bdf8"/>
+      <text x="280" y="75" fill="#38bdf8" font-size="11" text-anchor="middle">👤 主管/运维</text>
+      <text x="280" y="92" fill="#64748b" font-size="9" text-anchor="middle">看板 & 告警</text>
+
+      <!-- 网闸 -->
+      <rect x="370" y="55" width="60" height="40" rx="6" fill="#fbbf24" opacity="0.2" stroke="#fbbf24"/>
+      <text x="400" y="72" fill="#fbbf24" font-size="10" text-anchor="middle">网闸</text>
+      <text x="400" y="86" fill="#fbbf24" font-size="8" text-anchor="middle">↑只许HTTP</text>
+
+      <!-- 工控网 -->
+      <rect x="10" y="170" width="880" height="155" rx="10" fill="none" stroke="#334155" stroke-dasharray="5 4"/>
+      <text x="360" y="166" fill="#94a3b8" font-size="12" text-anchor="middle">工控网 (172.16.x.0/24)</text>
+
+      <!-- Web Server -->
+      <rect x="50" y="195" width="130" height="55" rx="8" fill="#1e293b" stroke="#22d3ee"/>
+      <text x="115" y="218" fill="#22d3ee" font-size="12" text-anchor="middle">Nginx + Vue</text>
+      <text x="115" y="238" fill="#64748b" font-size="9" text-anchor="middle">Web前端反代</text>
+
+      <!-- API -->
+      <rect x="210" y="195" width="130" height="55" rx="8" fill="#1e293b" stroke="#22d3ee"/>
+      <text x="275" y="218" fill="#22d3ee" font-size="12" text-anchor="middle">FastAPI × 2</text>
+      <text x="275" y="238" fill="#64748b" font-size="9" text-anchor="middle">:8000 负载均衡</text>
+
+      <!-- Model -->
+      <rect x="370" y="195" width="130" height="55" rx="8" fill="#1e293b" stroke="#a78bfa"/>
+      <text x="435" y="218" fill="#a78bfa" font-size="12" text-anchor="middle">Model Worker</text>
+      <text x="435" y="238" fill="#64748b" font-size="9" text-anchor="middle">XGBoost / PyTorch</text>
+
+      <!-- DB -->
+      <rect x="530" y="195" width="130" height="55" rx="8" fill="#1e293b" stroke="#34d399"/>
+      <text x="595" y="218" fill="#34d399" font-size="12" text-anchor="middle">DB Cluster</text>
+      <text x="595" y="238" fill="#64748b" font-size="9" text-anchor="middle">MySQL+Influx+pgvector</text>
+
+      <!-- LLM -->
+      <rect x="690" y="195" width="130" height="55" rx="8" fill="#1e293b" stroke="#a78bfa"/>
+      <text x="755" y="218" fill="#a78bfa" font-size="12" text-anchor="middle">Qwen 本地</text>
+      <text x="755" y="238" fill="#64748b" font-size="9" text-anchor="middle">知识库RAG推理</text>
+
+      <!-- 炉子 -->
+      <rect x="80" y="270" width="140" height="40" rx="8" fill="#0b1220" stroke="#f87171"/>
+      <text x="150" y="294" fill="#f87171" font-size="12" text-anchor="middle">回流焊炉 OVEN-01~05</text>
+
+      <!-- 箭头 -->
+      <g stroke="#64748b" stroke-width="1.3" fill="#64748b">
+        <line x1="245" y1="222" x2="308" y2="222"/>
+        <line x1="435" y1="222" x2="498" y2="222"/>
+      </g>
+      <text x="275" y="275" fill="#64748b" font-size="8" text-anchor="middle">OPC UA / Modbus</text>
+    </svg>
+    <div class="cap">图 2 部署拓扑：工控网/办公网经网闸隔离，系统主体在工控侧，仅 Web 经网闸暴露</div>
+  </div>
+
+  <div class="card">
+    <h4>运行环境（最小配置）</h4>
+    <table>
+      <tr><th>组件</th><th>CPU</th><th>RAM</th><th>磁盘</th><th>OS</th></tr>
+      <tr><td>Web + API 服务器</td><td>4 vCPU</td><td>8 GB</td><td>50 GB SSD</td><td>Ubuntu 22.04 LTS</td></tr>
+      <tr><td>数据库服务器（MySQL + InfluxDB）</td><td>8 vCPU</td><td>32 GB</td><td>500 GB SSD</td><td>Ubuntu 22.04 LTS</td></tr>
+      <tr><td>模型推理 / 训练节点</td><td>8 vCPU + GPU(可选)</td><td>32 GB</td><td>200 GB SSD</td><td>Ubuntu 22.04 LTS</td></tr>
+      <tr><td>大模型推理(Qwen-7B)</td><td>8 vCPU + T4/A10 GPU</td><td>32 GB</td><td>100 GB SSD</td><td>Ubuntu 22.04 LTS</td></tr>
+      <tr><td>采集网关（每炉）</td><td>树莓派 4 / 工控小机</td><td>4 GB</td><td>32 GB SD</td><td>Raspbian / Debian</td></tr>
+    </table>
+  </div>
+
+  <!-- ================ 4 ================ -->
+  <h2 id="s4">4. 数据库设计（完整 SQL DDL）</h2>
+
+  <h4>4.1 MySQL: 关系数据（炉次主表 + 质量结果 + 特征）</h4>
+  <pre><span class="kw">CREATE DATABASE</span> reflow_ai <span class="kw">CHARACTER SET</span> utf8mb4;
+
+<span class="cm">-- 表1: 炉次主表（每一次过炉的记录）</span>
+<span class="kw">CREATE TABLE</span> reflow_run (
+  run_id       <span class="kw">VARCHAR</span>(64) <span class="kw">PRIMARY KEY</span>      <span class="cm">-- 格式: R-日期-序号, 如R-240715-0001</span>
+  oven_id      <span class="kw">VARCHAR</span>(32) <span class="kw">NOT NULL</span>,         <span class="cm">-- 炉子编号: OVEN-01~05</span>
+  product_id   <span class="kw">VARCHAR</span>(64) <span class="kw">NOT NULL</span>,         <span class="cm">-- 产品型号</span>
+  lot_id       <span class="kw">VARCHAR</span>(64) <span class="kw">NOT NULL</span>,         <span class="cm">-- 批次号</span>
+  chain_speed  <span class="kw">DECIMAL</span>(5,2) <span class="kw">NOT NULL</span>,        <span class="cm">-- 链速, 范围 40~120 cm/min</span>
+  zone1_temp   <span class="kw">DECIMAL</span>(5,1) <span class="kw">NOT NULL</span> <span class="kw">DEFAULT</span> <span class="num">0</span>,  <span class="cm">-- 温区1设定温度 (℃)</span>
+  zone2_temp   <span class="kw">DECIMAL</span>(5,1) <span class="kw">NOT NULL</span> <span class="kw">DEFAULT</span> <span class="num">0</span>,
+  zone3_temp   <span class="kw">DECIMAL</span>(5,1) <span class="kw">NOT NULL</span> <span class="kw">DEFAULT</span> <span class="num">0</span>,
+  zone4_temp   <span class="kw">DECIMAL</span>(5,1) <span class="kw">NOT NULL</span> <span class="kw">DEFAULT</span> <span class="num">0</span>,
+  zone5_temp   <span class="kw">DECIMAL</span>(5,1) <span class="kw">NOT NULL</span> <span class="kw">DEFAULT</span> <span class="num">0</span>,
+  zone6_temp   <span class="kw">DECIMAL</span>(5,1) <span class="kw">NOT NULL</span> <span class="kw">DEFAULT</span> <span class="num">0</span>,
+  zone7_temp   <span class="kw">DECIMAL</span>(5,1) <span class="kw">NOT NULL</span> <span class="kw">DEFAULT</span> <span class="num">0</span>,
+  zone8_temp   <span class="kw">DECIMAL</span>(5,1) <span class="kw">NOT NULL</span> <span class="kw">DEFAULT</span> <span class="num">0</span>,
+  zone9_temp   <span class="kw">DECIMAL</span>(5,1) <span class="kw">NOT NULL</span> <span class="kw">DEFAULT</span> <span class="num">0</span>,
+  zone10_temp  <span class="kw">DECIMAL</span>(5,1) <span class="kw">NOT NULL</span> <span class="kw">DEFAULT</span> <span class="num">0</span>,
+  air_volume   <span class="kw">DECIMAL</span>(5,1) <span class="kw">DEFAULT NULL</span>,     <span class="cm">-- 风量 0~100(%)</span>
+  oxygen_ppm   <span class="kw">INT</span> <span class="kw">DEFAULT NULL</span>,             <span class="cm">-- 氧含量 ppm (氮气氛)</span>
+  start_time   <span class="kw">DATETIME NOT NULL</span>,
+  end_time     <span class="kw">DATETIME NOT NULL</span>,
+  operator_id  <span class="kw">VARCHAR</span>(32) <span class="kw">DEFAULT NULL</span>,    <span class="cm">-- 操作人工号</span>
+  ai_recommended <span class="kw">BOOLEAN NOT NULL</span> <span class="kw">DEFAULT</span> <span class="num">FALSE</span>, <span class="cm">-- 是否 AI 推荐参数</span>
+  created_at   <span class="kw">DATETIME NOT NULL</span> <span class="kw">DEFAULT CURRENT_TIMESTAMP</span>,
+  <span class="kw">INDEX</span> idx_oven_time (oven_id, start_time),
+  <span class="kw">INDEX</span> idx_lot (lot_id),
+  <span class="kw">INDEX</span> idx_product (product_id, start_time)
+);
+
+<span class="cm">-- 表2: 质量结果表</span>
+<span class="kw">CREATE TABLE</span> quality_result (
+  id           <span class="kw">BIGINT AUTO_INCREMENT PRIMARY KEY</span>,
+  lot_id       <span class="kw">VARCHAR</span>(64) <span class="kw">NOT NULL</span>,
+  sn           <span class="kw">VARCHAR</span>(128) <span class="kw">DEFAULT NULL</span>,  <span class="cm">-- 单板序列号</span>
+  aoi_result   <span class="kw">ENUM</span>(<span class="str">'PASS'</span>,<span class="str">'FAIL'</span>) <span class="kw">NOT NULL</span>,
+  xray_void_rate <span class="kw">DECIMAL</span>(4,1) <span class="kw">DEFAULT NULL</span>, <span class="cm">-- BGA 空洞率 0~100%</span>
+  ict_result   <span class="kw">ENUM</span>(<span class="str">'PASS'</span>,<span class="str">'FAIL'</span>) <span class="kw">DEFAULT NULL</span>,
+  defect_type  <span class="kw">ENUM</span>(<span class="str">'无'</span>,<span class="str">'虚焊'</span>,<span class="str">'桥连'</span>,<span class="str">'立碑'</span>,<span class="str">'空洞'</span>,<span class="str">'锡珠'</span>,<span class="str">'其他'</span>) <span class="kw">NOT NULL</span>,
+  defect_count <span class="kw">INT NOT NULL DEFAULT</span> <span class="num">0</span>,
+  repair_flag  <span class="kw">BOOLEAN NOT NULL DEFAULT</span> <span class="num">FALSE</span>, <span class="cm">-- 核心标签: 是否返修</span>
+  inspect_time <span class="kw">DATETIME NOT NULL</span>,
+  feedback_ai_valid <span class="kw">BOOLEAN DEFAULT NULL</span>, <span class="cm">-- 人工反馈: AI 推荐对/错</span>
+  created_at   <span class="kw">DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP</span>,
+  <span class="kw">INDEX</span> idx_lot (lot_id),
+  <span class="kw">INDEX</span> idx_defect_time (defect_type, inspect_time),
+  <span class="kw">INDEX</span> idx_repair (repair_flag, inspect_time)
+);
+
+<span class="cm">-- 表3: 曲线特征表（模型输入，每次过炉计算一次）</span>
+<span class="kw">CREATE TABLE</span> profile_feature (
+  run_id       <span class="kw">VARCHAR</span>(64) <span class="kw">PRIMARY KEY</span>,
+  peak_temp    <span class="kw">DECIMAL</span>(5,1) <span class="kw">NOT NULL</span>,     <span class="cm">-- 峰值温度 235~250℃</span>
+  tal          <span class="kw">DECIMAL</span>(5,1) <span class="kw">NOT NULL</span>,     <span class="cm">-- TAL: 液相线以上时间 45~90s</span>
+  ramp_up      <span class="kw">DECIMAL</span>(4,2) <span class="kw">NOT NULL</span>,    <span class="cm">-- 升温斜率 1~3 ℃/s</span>
+  ramp_down    <span class="kw">DECIMAL</span>(4,2) <span class="kw">NOT NULL</span>,    <span class="cm">-- 降温斜率 -1~-4 ℃/s</span>
+  delta_t      <span class="kw">DECIMAL</span>(4,1) <span class="kw">NOT NULL</span>,     <span class="cm">-- 板面最大温差 &lt;15℃</span>
+  soak_temp    <span class="kw">DECIMAL</span>(5,1) <span class="kw">NOT NULL</span>,     <span class="cm">-- 恒温平台均值 150~200℃</span>
+  time_above_183 <span class="kw">DECIMAL</span>(5,1) <span class="kw">NOT NULL</span>,  <span class="cm">-- ≥183℃ 时长 60~120s</span>
+  curve_duration <span class="kw">DECIMAL</span>(5,1) <span class="kw">NOT NULL</span>,  <span class="cm">-- 总过炉时长</span>
+  <span class="kw">FOREIGN KEY</span> (run_id) <span class="kw">REFERENCES</span> reflow_run(run_id)
+);
+</pre>
+
+  <h4>4.2 InfluxDB: 时序数据（炉温实测曲线）</h4>
+  <pre><span class="cm">-- Measurement: profile_signal
+-- Tags: run_id (关联外键), oven_id, product_id
+-- Fields: tc1~tc6 (6通道热电偶, float), board_position (string)
+-- Timestamp: sample_time (ns precision)
+-- 设计理由: 按炉次 + 炉号做 Tag, 查询"某炉某产品的曲线走势"极快</span>
+</pre>
+
+  <h4>4.3 pgvector: 知识库向量</h4>
+  <pre><span class="kw">CREATE EXTENSION</span> vector;
+<span class="kw">CREATE TABLE</span> kb_documents (
+  id          <span class="kw">SERIAL PRIMARY KEY</span>,
+  content     <span class="kw">TEXT NOT NULL</span>,
+  embedding   <span class="fn">vector</span>(<span class="num">1536</span>),          <span class="cm">-- OpenAI 兼容维度或本地模型维度</span>
+  source      <span class="kw">VARCHAR</span>(128),             <span class="cm">-- 来源: 经验#E017 / SOP-回流-04</span>
+  category    <span class="kw">VARCHAR</span>(32),              <span class="cm">-- 分类: 虚焊/桥连/立碑等</span>
+  created_at  <span class="kw">TIMESTAMP DEFAULT NOW</span>()
+);
+</pre>
+
+  <!-- ================ 5 ================ -->
+  <h2 id="s5">5. 特征工程</h2>
+  <p>从 6 通道热电偶的原始曲线采样点（约 180~360 点/通道）压缩为 8 维特征，并拼接板/锡膏元信息。</p>
+
+  <h4>5.1 曲线→特征计算（Python 实现）</h4>
+  <pre><span class="kw">import</span> numpy <span class="kw">as</span> np
+
+<span class="kw">def extract_features</span>(<span class="fn">times</span>, <span class="fn">tc_signals</span>):
+    <span class="cm">"""
+    times: array of sample timestamps (s)
+    tc_signals: (6, N) array, 6通道热电偶温度
+    返回: dict of 8 features
+    """</span>
+    avg_curve = tc_signals.mean(axis=<span class="num">0</span>)  <span class="cm"># 6通道均值</span>
+    dt = np.gradient(times)
+    dT = np.gradient(avg_curve)
+
+    features = {
+        <span class="str">'peak_temp'</span>:    <span class="kw">float</span>(avg_curve.max()),
+        <span class="str">'tal'</span>:          <span class="kw">float</span>(np.sum(avg_curve >= <span class="num">217</span>) * dt.mean()),
+        <span class="str">'ramp_up'</span>:      <span class="kw">float</span>(np.percentile(dT[:<span class="kw">len</span>(dT)//<span class="num">3</span>], <span class="num">90</span>)),
+        <span class="str">'ramp_down'</span>:    <span class="kw">float</span>(np.percentile(dT[<span class="kw">len</span>(dT)*<span class="num">2</span>//<span class="num">3</span>:], <span class="num">10</span>)),
+        <span class="str">'delta_t'</span>:      <span class="kw">float</span>(tc_signals.max(axis=<span class="num">1</span>).ptp()),
+        <span class="str">'soak_temp'</span>:    <span class="kw">float</span>(avg_curve[<span class="kw">len</span>(avg_curve)//<span class="num">4</span>:<span class="kw">len</span>(avg_curve)//<span class="num">2</span>].mean()),
+        <span class="str">'time_above_183'</span>: <span class="kw">float</span>(np.sum(avg_curve >= <span class="num">183</span>) * dt.mean()),
+        <span class="str">'curve_duration'</span>: <span class="kw">float</span>(times[-<span class="num">1</span>] - times[<span class="num">0</span>])
+    }
+    <span class="kw">return</span> features
+</pre>
+
+  <h4>5.2 完整模型输入向量</h4>
+  <table>
+    <tr><th>维度</th><th>来源</th><th>类型</th><th>范围/编码</th></tr>
+    <tr><td>1-8</td><td>曲线特征 (profile_feature)</td><td>float</td><td>见上表</td></tr>
+    <tr><td>9</td><td>板厚</td><td>float</td><td>0.8~3.2 mm</td></tr>
+    <tr><td>10</td><td>铜面积占比</td><td>float</td><td>0~100%</td></tr>
+    <tr><td>11</td><td>BGA 数量</td><td>int</td><td>0~N</td></tr>
+    <tr><td>12</td><td>最大 BGA 尺寸</td><td>float</td><td>mm (0 if no BGA)</td></tr>
+    <tr><td>13</td><td>锡膏型号编码</td><td>int</td><td>1:SAC305, 2:SN63PB37, 3:SN100C …</td></tr>
+    <tr><td>14</td><td>元件面密度</td><td>float</td><td>件/cm²</td></tr>
+    <tr><td>15</td><td>环境温度</td><td>float</td><td>℃</td></tr>
+    <tr><td>16</td><td>环境湿度</td><td>float</td><td>%RH</td></tr>
+  </table>
+
+  <!-- ================ 6 ================ -->
+  <h2 id="s6">6. 模型层设计（三个核心模型）</h2>
+
+  <div class="card">
+    <h3 style="color:var(--accent)">模型1 · 工艺代理模型</h3>
+    <p><b>功能：</b>设定温度/链速/风量 → 预测炉温曲线（6 通道）</p>
+    <p><b>方法：</b>物理热模型（传热方程）做基线 + 神经网络残差校正（Physical-Informed Neural Network, PINN）。小样本阶段物理模型兜底，数据多了 NN 逐渐主导。</p>
+    <p><b>训练数据：</b>历史所有炉次的 (设定值, 实测曲线) 对。每个炉次提供 6×180 个标签点。</p>
+    <pre><span class="kw">class</span> <span class="fn">SurrogateModel</span>(nn.Module):
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="fn">self</span>):
+        <span class="kw">super</span>().<span class="fn">__init__</span>()
+        <span class="fn">self</span>.physics_net = SimpleThermalSolver()  <span class="cm"># 物理模型</span>
+        <span class="fn">self</span>.residual_nn = nn.Sequential(         <span class="cm"># 残差网络</span>
+            nn.Linear(<span class="num">12</span>, <span class="num">64</span>), nn.ReLU(),
+            nn.Linear(<span class="num">64</span>, <span class="num">128</span>), nn.ReLU(),
+            nn.Linear(<span class="num">128</span>, <span class="num">6</span> * <span class="num">180</span>)       <span class="cm"># 6通道×180时间点</span>
+        )
+    <span class="kw">def</span> <span class="fn">forward</span>(<span class="fn">self</span>, <span class="fn">x</span>):
+        base = <span class="fn">self</span>.physics_net(x)              <span class="cm"># 物理预测</span>
+        residual = <span class="fn">self</span>.residual_nn(x)          <span class="cm"># NN 校正</span>
+        <span class="kw">return</span> base + residual
+</pre>
+    <p style="font-size:12px;color:var(--sub);margin-top:4px">理由：纯 NN 在小样本时可能预测物理上不可能的曲线（如峰值 400℃），物理约束保安全下限。</p>
+  </div>
+
+  <div class="card">
+    <h3 style="color:var(--accent)">模型2 · 质量预测模型</h3>
+    <p><b>功能：</b>曲线特征 + 板/锡膏元信息 → 各缺陷类型的概率</p>
+    <p><b>方法：</b>多标签 XGBoost（MultiOutputClassifier），每个缺陷类型一个二分类器。损失函数加权以应对样本不平衡（坏板仅 3%）。</p>
+    <pre><span class="kw">from</span> xgboost <span class="kw">import</span> XGBClassifier
+<span class="kw">from</span> sklearn.multioutput <span class="kw">import</span> MultiOutputClassifier
+
+<span class="cm"># 缺陷类型列表: [虚焊, 桥连, 立碑, 空洞, 锡珠]</span>
+base = XGBClassifier(
+    max_depth=<span class="num">6</span>, n_estimators=<span class="num">300</span>,
+    learning_rate=<span class="num">0.05</span>,
+    scale_pos_weight=<span class="num">15</span>,        <span class="cm"># 坏:好 ≈ 1:30, 加权补偿</span>
+    subsample=<span class="num">0.8</span>, colsample_bytree=<span class="num">0.8</span>,
+    eval_metric=<span class="str">'auc'</span>, early_stopping_rounds=<span class="num">30</span>
+)
+model = MultiOutputClassifier(base, n_jobs=-<span class="num">1</span>)
+
+<span class="cm"># 验证: 每个缺陷类型独立计算 AUC/召回</span>
+<span class="kw">for</span> i, defect <span class="kw">in</span> <span class="kw">enumerate</span>(DEFECT_LABELS):
+    auc = roc_auc_score(y_test[:, i], proba[:, i])
+    <span class="kw">print</span>(<span class="str">f"{defect}: AUC={auc:.3f}"</span>)
+</pre>
+    <p style="font-size:12px;color:var(--sub);margin-top:4px">验收线: 每个缺陷类型 AUC ≥ 0.85, 召回率 ≥ 0.80。面向 3.2 万+ 炉次数据训练。</p>
+  </div>
+
+  <div class="card">
+    <h3 style="color:var(--accent)">模型3 · 参数推荐引擎</h3>
+    <p><b>功能：</b>新板 BOM + 锡膏 + 工艺窗口 → 最优温区设定 + 链速</p>
+    <p><b>方法：</b>贝叶斯优化 (Bayesian Optimization) 在代理模型上搜。搜索空间: 10 个温区温度 + 链速，共 11 维。目标函数 = 质量预测模型输出的缺陷概率（取最小）。约束: peak∈[235,250], TAL∈[45,90], ramp_up∈[1,3] 等。每次评估在代理模型上推理（毫秒级），无需真跑炉子。</p>
+    <p style="font-size:12px;color:var(--sub)">详见 §7。</p>
+  </div>
+
+  <!-- ================ 7 ================ -->
+  <h2 id="s7">7. 推荐引擎算法详解</h2>
+  <pre><span class="kw">from</span> bayes_opt <span class="kw">import</span> BayesianOptimization
+<span class="kw">from</span> bayes_opt.util <span class="kw">import</span> UtilityFunction
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+<span class="kw">class</span> <span class="fn">ReflowRecommender</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="fn">self</span>, surrogate_model, quality_model, featurizer):
+        <span class="fn">self</span>.surrogate  = surrogate_model     <span class="cm"># 代理模型</span>
+        <span class="fn">self</span>.quality    = quality_model       <span class="cm"># 质量预测模型</span>
+        <span class="fn">self</span>.featurizer = featurizer          <span class="cm"># 特征提取器</span>
+        <span class="fn">self</span>.window     = ProcessWindow()     <span class="cm"># 工艺窗口约束</span>
+
+    <span class="kw">def</span> <span class="fn">objective</span>(<span class="fn">self</span>, **params):
+        <span class="cm">"""BO 目标函数: 最小化缺陷概率"""
+</span>        setting = {<span class="str">'zones'</span>: [params[f<span class="str">'z{i}'</span>] <span class="kw">for</span> i <span class="kw">in</span> range(<span class="num">1</span>,<span class="num">11</span>)],
+                   <span class="str">'speed'</span>: params[<span class="str">'speed'</span>]}
+        <span class="cm"># 1. 代理模型预测曲线</span>
+        curve_6ch = <span class="fn">self</span>.surrogate.predict(setting)
+        <span class="cm"># 2. 提取曲线特征</span>
+        feats = <span class="fn">self</span>.featurizer(curve_6ch)
+        <span class="cm"># 3. 质量模型预测缺陷概率</span>
+        defect_probs = <span class="fn">self</span>.quality.predict_proba(feats)
+        <span class="cm"># 4. 检查工艺窗口约束（不满足则罚分）</span>
+        penalty = <span class="fn">self</span>.window.penalty(feats)
+        <span class="kw">return</span> -(defect_probs.max() + penalty)  <span class="cm"># BO 默认最大化</span>
+
+    <span class="kw">def</span> <span class="fn">recommend</span>(<span class="fn">self</span>, product, solder_paste, top_k=<span class="num">3</span>):
+        <span class="cm">"""对新板给出 top-k 个推荐方案"""
+</span>        pbounds = <span class="fn">self</span>._build_bounds(product, solder_paste)
+        opt = BayesianOptimization(
+            f=<span class="kw">lambda</span> **p: <span class="fn">self</span>.objective(**p),
+            pbounds=pbounds,
+            random_state=<span class="num">42</span>
+        )
+        <span class="cm"># 探索阶段: 随机采样 12 个初始点</span>
+        opt.maximize(init_points=<span class="num">12</span>, n_iter=<span class="num">36</span>)
+        <span class="cm"># 取 top-k, 并解释</span>
+        results = []
+        <span class="kw">for</span> i, res <span class="kw">in</span> <span class="kw">enumerate</span>(opt.res[:top_k]):
+            explanation = <span class="fn">self</span>._explain(res[<span class="str">'params'</span>], product)
+            risk = <span class="fn">self</span>._assess_risk(feats)
+            results.append({<span class="str">'setting'</span>: res[<span class="str">'params'</span>], <span class="str">'score'</span>: -res[<span class="str">'target'</span>],
+                           <span class="str">'explanation'</span>: explanation, <span class="str">'risk'</span>: risk})
+        <span class="kw">return</span> results
+</pre>
+  <div class="card warn" style="font-size:13px">
+    <b style="color:var(--warn)">约束注入：</b>内置工艺窗口硬约束：<code>peak∈[235,250]</code>, <code>TAL∈[45,90]</code>, <code>ramp_up∈[1,3]</code>。<b>越界参数 100% 拦截，不进入推荐结果</b>。异常时自动回退到该产品历史最优设定（安全兜底）。
+  </div>
+
+  <!-- ================ 8 ================ -->
+  <h2 id="s8">8. 知识库 RAG 设计</h2>
+  <div class="card">
+    <h4>架构：本地 RAG（检索增强生成）</h4>
+    <p>不把工艺数据外传，全链路本地运行。</p>
+    <ol>
+      <li><b>离线建库：</b>收集 SOP 文档 / 老师傅经验 / 历史异常案例 / 行业规范 → 用本地 Embedding 模型（BGE-M3, 1024d）转为向量 → 存入 pgvector。</li>
+      <li><b>在线问答：</b>用户提问 → 同模型 Embedding → pgvector 检索 Top-5 相关文档 → 拼 Prompt 送入 Qwen-7B（本地部署）→ 返回带引用来源的回答。</li>
+      <li><b>持续更新：</b>每次反馈闭环标记的对/错案例自动入知识库（经人工确认后）。</li>
+    </ol>
+  </div>
+  <pre><span class="cm"># RAG 问答伪代码</span>
+<span class="kw">def</span> <span class="fn">kb_answer</span>(question):
+    q_vec = embed(question)                               <span class="cm"># BGE-M3 embedding</span>
+    docs  = pgvector.search(q_vec, top_k=<span class="num">5</span>)             <span class="cm"># 向量检索</span>
+    context = <span class="str">"\n---\n"</span>.join([d.content <span class="kw">for</span> d in docs])
+    sources  = [d.source <span class="kw">for</span> d in docs]
+    prompt = <span class="str">f"""你是回流焊工艺专家。请基于以下知识库内容回答问题。
+只使用下面提供的信息，不要编造。如果信息不足，请说"根据现有资料无法确定"。
+
+知识库内容:
+{context}
+
+问题: {question}
+
+请给出建议并标注引用来源。"""</span>
+    answer = qwen.generate(prompt, max_tokens=<span class="num">512</span>)    <span class="cm"># 本地 Qwen-7B</span>
+    <span class="kw">return</span> {<span class="str">'answer'</span>: answer, <span class="str">'sources'</span>: sources}
+</pre>
+
+  <!-- ================ 9 ================ -->
+  <h2 id="s9">9. API 完整设计</h2>
+  <p>RESTful JSON API，FastAPI 实现。统一前缀 <code>/api/v1</code>。</p>
+
+  <table>
+    <tr><th>方法</th><th>路径</th><th>说明</th><th>认证</th></tr>
+    <tr><td><code>POST</code></td><td><code>/api/v1/recommend</code></td><td>生成参数推荐</td><td>Bearer Token</td></tr>
+    <tr><td><code>POST</code></td><td><code>/api/v1/profile/predict</code></td><td>预测炉温曲线</td><td>Bearer Token</td></tr>
+    <tr><td><code>POST</code></td><td><code>/api/v1/dispatch</code></td><td>下发参数（审批流）</td><td>Bearer + 二次确认</td></tr>
+    <tr><td><code>POST</code></td><td><code>/api/v1/feedback</code></td><td>质量反馈（对/错标记）</td><td>Bearer Token</td></tr>
+    <tr><td><code>POST</code></td><td><code>/api/v1/kb/ask</code></td><td>知识库问答</td><td>Bearer Token</td></tr>
+    <tr><td><code>GET</code></td><td><code>/api/v1/dashboard</code></td><td>监控看板聚合数据</td><td>Bearer Token</td></tr>
+    <tr><td><code>GET</code></td><td><code>/api/v1/run/{run_id}</code></td><td>查询单次炉次详情</td><td>Bearer Token</td></tr>
+    <tr><td><code>POST</code></td><td><code>/api/v1/model/retrain</code></td><td>触发模型重训</td><td>Admin Token</td></tr>
+    <tr><td><code>GET</code></td><td><code>/api/v1/health</code></td><td>健康检查（无认证）</td><td>—</td></tr>
+  </table>
+
+  <h4>核心接口 Schema</h4>
+  <div class="compare">
+    <div class="win">
+      <p style="font-weight:700;color:var(--ok);font-size:13px">POST /api/v1/recommend（请求）</p>
+      <pre style="margin:8px 0 0;font-size:12px">{
+  <span class="str">"product_id"</span>: <span class="str">"PCB-A12"</span>,
+  <span class="str">"solder_paste"</span>: <span class="str">"SAC305"</span>,
+  <span class="str">"bom"</span>: {
+    <span class="str">"thickness_mm"</span>: <span class="num">1.6</span>,
+    <span class="str">"copper_area_pct"</span>: <span class="num">35.2</span>,
+    <span class="str">"bga_count"</span>: <span class="num">3</span>,
+    <span class="str">"max_bga_size_mm"</span>: <span class="num">27</span>,
+    <span class="str">"component_density"</span>: <span class="num">12.5</span>
+  },
+  <span class="str">"constraints"</span>: {
+    <span class="str">"peak_min"</span>: <span class="num">235</span>,
+    <span class="str">"peak_max"</span>: <span class="num">250</span>,
+    <span class="str">"tal_min"</span>: <span class="num">45</span>,
+    <span class="str">"tal_max"</span>: <span class="num">90</span>
+  }
+}</pre>
+    </div>
+    <div>
+      <p style="font-weight:700;color:var(--accent);font-size:13px">POST /api/v1/recommend（响应）</p>
+      <pre style="margin:8px 0 0;font-size:12px">{
+  <span class="str">"request_id"</span>: <span class="str">"rec-240715-003"</span>,
+  <span class="str">"recommendations"</span>: [{
+    <span class="str">"rank"</span>: <span class="num">1</span>,
+    <span class="str">"score"</span>: <span class="num">0.988</span>,        <span class="cm">// 预测良率</span>
+    <span class="str">"setting"</span>: {
+      <span class="str">"zone1"</span>: <span class="num">180</span>, <span class="str">"zone2"</span>: <span class="num">170</span>, <span class="str">"zone3"</span>: <span class="num">160</span>,
+      <span class="str">"zone4"</span>: <span class="num">165</span>, <span class="str">"zone5"</span>: <span class="num">170</span>, <span class="str">"zone6"</span>: <span class="num">175</span>,
+      <span class="str">"zone7"</span>: <span class="num">255</span>, <span class="str">"zone8"</span>: <span class="num">261</span>,
+      <span class="str">"zone9"</span>: <span class="num">240</span>, <span class="str">"zone10"</span>: <span class="num">200</span>,
+      <span class="str">"chain_speed"</span>: <span class="num">85</span>
+    },
+    <span class="str">"explanation"</span>: {
+      <span class="str">"top3_features"</span>: [
+        {<span class="str">"feature"</span>: <span class="str">"peak_temp"</span>, <span class="str">"importance"</span>: <span class="num">0.34</span>,
+         <span class="str">"note"</span>: <span class="str">"大铜箔需要更高峰值"</span>},
+        {<span class="str">"feature"</span>: <span class="str">"tal"</span>, <span class="str">"importance"</span>: <span class="num">0.22</span>,
+         <span class="str">"note"</span>: <span class="str">"BGA 焊点需延长液相时间"</span>},
+        {<span class="str">"feature"</span>: <span class="str">"delta_t"</span>, <span class="str">"importance"</span>: <span class="num">0.15</span>,
+         <span class="str">"note"</span>: <span class="str">"控制板面温差防立碑"</span>}
+      ]
+    },
+    <span class="str">"risks"</span>: [
+      {<span class="str">"type"</span>: <span class="str">"虚焊"</span>, <span class="str">"probability"</span>: <span class="num">0.011</span>,
+       <span class="str">"mitigation"</span>: <span class="str">"回流区已+6℃补偿大铜箔吸热"</span>}
+    ]
+  }],
+  <span class="str">"watermark"</span>: {
+    <span class="str">"model_version"</span>: <span class="str">"quality-v0.3"</span>,
+    <span class="str">"surrogate_version"</span>: <span class="str">"surr-v0.2"</span>,
+    <span class="str">"generated_at"</span>: <span class="str">"2024-07-15T10:30:00Z"</span>
+  }
+}</pre>
+    </div>
+  </div>
+
+  <h4>下发接口（审批流）</h4>
+  <pre><span class="cm">-- POST /api/v1/dispatch
+-- 入库后需工艺员二次确认，生成 audit log</span>
+{
+  <span class="str">"request_id"</span>: <span class="str">"rec-240715-003"</span>,
+  <span class="str">"oven_id"</span>:    <span class="str">"OVEN-03"</span>,
+  <span class="str">"confirmed_by"</span>: <span class="str">"OP-028"</span>,       <span class="cm">// 确认人工号</span>
+  <span class="str">"comment"</span>:     <span class="str">"回流区+6℃, 链速-5, 先跑10片"</span>
+}
+<span class="cm">// 服务端校验: 1) 参数在工艺窗口内 2) 与最近一次设定比差异≤阈值 3) 写入 audit_log</span>
+<span class="cm">// 校验通过后: 经安全网关写 PLC → 返回下发结果</span>
+</pre>
+
+  <!-- ================ 10 ================ -->
+  <h2 id="s10">10. 监控与可观测性</h2>
+  <h4>三支柱</h4>
+  <table>
+    <tr><th style="width:100px">支柱</th><th>工具</th><th>关键指标</th></tr>
+    <tr><td>Metrics</td><td>Prometheus + Grafana</td><td>API 延迟(p50/p95/p99)、推荐采纳率、模型推理 QPS、数据库连接池使用率、采集心跳</td></tr>
+    <tr><td>Logging</td><td>ELK (Elasticsearch + Logstash + Kibana)</td><td>每次推荐/下发的完整 audit log、模型预测日志、异常堆栈、安全拦截记录</td></tr>
+    <tr><td>Tracing</td><td>Jaeger / OpenTelemetry</td><td>端到端：采集→特征→模型→推荐→下发 全链路延迟追踪</td></tr>
+  </table>
+
+  <h4>关键告警规则</h4>
+  <table>
+    <tr><th>告警</th><th>条件</th><th>级别</th></tr>
+    <tr><td>采集断连</td><td>任一数据源 30 秒无心跳</td><td><span class="tag t-bad">Critical</span></td></tr>
+    <tr><td>推荐良率跌破</td><td>AI 推荐炉次 24h 滑动良率 &lt; 95%</td><td><span class="tag t-warn">Warning</span></td></tr>
+    <tr><td>模型漂移</td><td>预测概率 vs 实际良率偏差 &gt; 5pp 持续 1h</td><td><span class="tag t-warn">Warning</span></td></tr>
+    <tr><td>越界拦截触发</td><td>安全红线被触发（应极少发生）</td><td><span class="tag t-bad">Critical</span></td></tr>
+    <tr><td>API 延迟飙升</td><td>/recommend p99 &gt; 2000ms</td><td><span class="tag t-warn">Warning</span></td></tr>
+  </table>
+
+  <!-- ================ 11 ================ -->
+  <h2 id="s11">11. 安全架构</h2>
+  <div class="card warn">
+    <h4 style="color:var(--warn)">纵深防御三道线</h4>
+    <table>
+      <tr><th>防线</th><th>措施</th></tr>
+      <tr><td>网络隔离</td><td>工控网/办公网单向网闸。Web 仅暴露 443 端口，API 仅工控内网可达。PLC 子网独立，仅采集网关可通。</td></tr>
+      <tr><td>参数硬拦截</td><td>推荐引擎输出的设定值在写入 PLC 前过三道校验：①是否在工艺窗口 (±3σ) ②与历史安全设定库比对 ③物理合理性（如升温段必须递增）。任一不通过 → 阻断 + 告警。</td></tr>
+      <tr><td>人确认 + 审计</td><td>下发须通过审批流：工艺员在 Web 点"确认下发"→ 二次弹窗确认 → 写入</td></tr>
+    </table>
+  </div>
+  <pre><span class="cm">-- audit_log 表（不可篡改，建议启用 MySQL binlog 存档）</span>
+<span class="kw">CREATE TABLE</span> audit_log (
+  id           <span class="kw">BIGINT AUTO_INCREMENT PRIMARY KEY</span>,
+  action       <span class="kw">VARCHAR</span>(32),                <span class="cm">-- DISPATCH / REJECT / OVERRIDE</span>
+  request_id   <span class="kw">VARCHAR</span>(64),
+  oven_id      <span class="kw">VARCHAR</span>(32),
+  old_params   <span class="kw">JSON</span>,                       <span class="cm">-- 下发前设定</span>
+  new_params   <span class="kw">JSON</span>,                       <span class="cm">-- 下发后设定</span>
+  operator_id  <span class="kw">VARCHAR</span>(32),
+  result       <span class="kw">VARCHAR</span>(16),                <span class="cm">-- SUCCESS / BLOCKED</span>
+  ip_address   <span class="kw">VARCHAR</span>(45),
+  created_at   <span class="kw">DATETIME DEFAULT CURRENT_TIMESTAMP</span>
+);</pre>
+
+  <!-- ================ 12 ================ -->
+  <h2 id="s12">12. 测试策略</h2>
+  <div class="card">
+    <h4>分层测试</h4>
+    <table>
+      <tr><th>层级</th><th>内容</th><th>频率</th></tr>
+      <tr><td>单元测试</td><td>特征提取函数、边界计算、工艺窗口校验、API 端点</td><td>每次 commit</td></tr>
+      <tr><td>集成测试</td><td>采集→特征→模型→推荐 全 pipeline；数据库读写；pgvector 检索</td><td>每次 PR</td></tr>
+      <tr><td>离线回测</td><td>用历史 3.2 万炉次回测：AUC/召回/精确率；随机选 100 个历史推荐与老师傅对比良率</td><td>每次模型发布</td></tr>
+      <tr><td>A/B 测试</td><td>1条线分两时段：上午 AI 推荐, 下午老师傅, 对比返修率和"首炉合格率"</td><td>试点阶段 4 周</td></tr>
+      <tr><td>安全测试</td><td>故意输入越界参数 → 验证 100% 拦截；模拟网络中断 → 验证回退机制</td><td>上线前</td></tr>
+      <tr><td>压力测试</td><td>模拟 10 并发推荐请求，p99 &lt; 2s；InfluxDB 写入 10000 点/秒无丢</td><td>上线前</td></tr>
+    </table>
+  </div>
+
+  <!-- ================ 13 ================ -->
+  <h2 id="s13">13. CI/CD 与模型生命周期</h2>
+  <div class="diagram">
+    <svg viewBox="0 0 880 280" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,Microsoft YaHei,sans-serif">
+      <!-- Git -->
+      <rect x="20" y="100" width="90" height="48" rx="8" fill="#1e293b" stroke="#fbbf24"/>
+      <text x="65" y="118" fill="#fbbf24" font-size="11" text-anchor="middle">Git Push</text>
+      <text x="65" y="135" fill="#64748b" font-size="9" text-anchor="middle">+ 数据标注</text>
+      <!-- CI -->
+      <rect x="160" y="100" width="90" height="48" rx="8" fill="#1e293b" stroke="#22d3ee"/>
+      <text x="205" y="118" fill="#22d3ee" font-size="11" text-anchor="middle">CI Pipeline</text>
+      <text x="205" y="135" fill="#64748b" font-size="9" text-anchor="middle">lint + 单元测试</text>
+      <!-- 离线回测 -->
+      <rect x="300" y="100" width="100" height="48" rx="8" fill="#1e293b" stroke="#a78bfa"/>
+      <text x="350" y="118" fill="#a78bfa" font-size="11" text-anchor="middle">离线回测</text>
+      <text x="350" y="135" fill="#64748b" font-size="9" text-anchor="middle">AUC≥0.85?</text>
+      <!-- Model Registry -->
+      <rect x="450" y="100" width="100" height="48" rx="8" fill="#1e293b" stroke="#34d399"/>
+      <text x="500" y="118" fill="#34d399" font-size="11" text-anchor="middle">Model Registry</text>
+      <text x="500" y="135" fill="#64748b" font-size="9" text-anchor="middle">versioned .pkl</text>
+      <!-- Deploy -->
+      <rect x="600" y="100" width="100" height="48" rx="8" fill="#1e293b" stroke="#38bdf8"/>
+      <text x="650" y="118" fill="#38bdf8" font-size="11" text-anchor="middle">灰度部署</text>
+      <text x="650" y="135" fill="#64748b" font-size="9" text-anchor="middle">canary 10%→100%</text>
+      <!-- Monitor -->
+      <rect x="750" y="100" width="100" height="48" rx="8" fill="#1e293b" stroke="#f87171"/>
+      <text x="800" y="118" fill="#f87171" font-size="11" text-anchor="middle">在线监控</text>
+      <text x="800" y="135" fill="#64748b" font-size="9" text-anchor="middle">漂移检测</text>
+      <!-- 箭头 -->
+      <g stroke="#64748b" stroke-width="1.5" fill="#64748b">
+        <line x1="110" y1="124" x2="158" y2="124"/><polygon points="164,124 154,120 154,128"/>
+        <line x1="250" y1="124" x2="298" y2="124"/><polygon points="304,124 294,120 294,128"/>
+        <line x1="400" y1="124" x2="448" y2="124"/><polygon points="454,124 444,120 444,128"/>
+        <line x1="550" y1="124" x2="598" y2="124"/><polygon points="604,124 594,120 594,128"/>
+        <line x1="700" y1="124" x2="748" y2="124"/><polygon points="754,124 744,120 744,128"/>
+      </g>
+      <!-- 反馈回环 -->
+      <path d="M820,148 Q820,200 65,200 Q20,200 20,148 L20,124" fill="none" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="6 4"/>
+      <polygon points="20,118 14,128 26,128" fill="#fbbf24"/>
+      <text x="440" y="210" fill="#fbbf24" font-size="10" text-anchor="middle">数据回灌：在线反馈 → Git(标注) → 重训练</text>
+
+      <!-- 工具标注 -->
+      <text x="22" y="58" fill="#94a3b8" font-size="10">代码仓库 (GitLab)</text>
+      <text x="22" y="178" fill="#94a3b8" font-size="10">数据仓库 (MySQL Dump + InfluxDB Backup)</text>
+    </svg>
+    <div class="cap">图 3 CI/CD 与模型生命周期：Git → CI → 回测 → Registry → 灰度发布 → 监控 → 反馈回灌</div>
+  </div>
+
+  <div class="card" style="font-size:13.5px">
+    <h4>模型版本管理（MLflow）</h4>
+    <p>使用 MLflow Tracking 记录每次训练的超参与指标；MLflow Model Registry 管理 staging → production 流转。XGBoost 模型存储为 <code>.pkl</code>，PyTorch 代理模型存为 <code>.pt</code>，均在 Registry 中版本化。</p>
+    <p>部署策略：新模型先灰度 10% 流量（影子模式），24h 无异常 → 扩至 100%。旧模型保留 7 天可回滚。</p>
+  </div>
+
+  <!-- ================ 14 ================ -->
+  <h2 id="s14">14. 实施计划与里程碑</h2>
+  <table>
+    <tr><th>阶段</th><th>月份</th><th>关键交付</th><th>验收标准</th><th>风险</th></tr>
+    <tr><td>P0 立项 & 数据</td><td>1-2</td><td>数据源全部打通(PLC+SPI+AOI+MES)、三表建好、板级追溯可跑通 100 炉次</td><td>run_id→lot_id 串联 100%</td><td>老设备无 OPC UA → 采购协议转换器</td></tr>
+    <tr><td>P1 特征工程</td><td>2-3</td><td>特征自动计算 pipeline 上线；工艺窗口校验服务</td><td>3.2 万炉次特征跑完无异常</td><td>部分炉次曲线缺通道 → 补值规则</td></tr>
+    <tr><td>P2 模型开发</td><td>3-5</td><td>三模型 V0.1 训练 + 离线回测报告；推荐引擎原型</td><td>离线 AUC≥0.85, 召回≥0.80</td><td>坏板太少 → 过采样/合成数据</td></tr>
+    <tr><td>P3 应用开发</td><td>4-6</td><td>Web 前端全部页面、API 全部就绪、知识库 RAG 接入、下发审批流打通</td><td>原型交互 6 页面可用</td><td>前端人力不足 → Vue+现成组件库</td></tr>
+    <tr><td>P4 测试验证</td><td>6-7</td><td>安全测试、A/B 测试、压力测试全部通过</td><td>越界 100% 拦截、p99<2s</td><td>测试数据不足 → 合成 + 历史回放</td></tr>
+    <tr><td>P5 试点</td><td>7-8</td><td>1线2板影子模式 2 周 → 确认模式 4 周</td><td>采纳率≥80%、AI炉次良率≥老师傅+1.5pp</td><td>抵触 → 定位辅助、正向激励</td></tr>
+    <tr><td>P6 推广</td><td>8-9</td><td>扩至 3 线、培训、知识库常态化</td><td>3线采纳率均 ≥80%</td><td>推广过快 → 先稳 1 线再扩</td></tr>
+  </table>
+
+  <!-- ================ 15 ================ -->
+  <h2 id="s15">15. 系统如何超越老师傅（量化论证）</h2>
+  <div class="card ok">
+    <p>本技术方案不是要把老师傅"替换掉"，而是<b style="color:var(--ok)">把老师傅好的那部分数据化、规模化</b>，加上 AI 天然擅长的多维能力。以下每一行都有对应技术实现：</p>
+  </div>
+  <table>
+    <tr><th>AI 优势</th><th>技术实现</th><th>量化预期</th></tr>
+    <tr><td>零漂移稳定</td><td>模型推理无疲劳/情绪，同一输入 → 同一输出；早晚班无差异</td><td>良率波动 σ 降低 ≥ 40%</td></tr>
+    <tr><td>全局寻优</td><td>贝叶斯优化在 11 维空间搜 36 轮（≈ 10⁶ 等效评估），每次在代理模型推理（毫秒），人无法做到</td><td>推荐良率 ≥ 老师傅 +1.5pp</td></tr>
+    <tr><td>全历史经验</td><td>模型在 3.2 万炉次上训练，覆盖所有产品，不会"换料就抓瞎"</td><td>新板首炉合格 → ≥ 92%</td></tr>
+    <tr><td>可解释可审计</td><td>SHAP 归因 → "回流区+6℃是因为 BGA 热容大"；每次推荐可回溯</td><td>工艺员信任度 ↑ 采纳率 ≥ 80%</td></tr>
+    <tr><td>设备老化自校正</td><td>代理模型每月用最新曲线重校准，抵消加热器衰减</td><td>无需人"将就"，始终最优</td></tr>
+    <tr><td>知识不流失</td><td>所有经验入知识库 RAG；新人 2 周上岗而非 2 个月</td><td>培训周期 ↓ 75%</td></tr>
+    <tr><td>数据飞轮</td><td>每炉反馈回灌训练集 → 模型月月更准 → 采纳率↑ → 反馈更多</td><td>6 个月后 AUC +0.05</td></tr>
+  </table>
+  <div class="card" style="font-size:13px;color:var(--sub)">
+    <b style="color:var(--warn)">人不可替代的部分：</b>罕见新物料/新锡膏的首次调参、产线突发异常（如笼卡死、加热管断）、跨工序联调——这些仍由老师傅主导。系统定位是 <b style="color:var(--ok)">"最强辅助"</b>：把 80% 的常规调炉自动化，让人专注最难的 20%。
+  </div>
+
+  <div class="prevnext">
+    <a href="index.html">← 返回首页</a>
+    <div>
+      <a href="prototype.html" style="margin-right:16px">产品原型 →</a>
+      <a href="tech-design.html" style="opacity:.5">V1 版本</a>
+    </div>
+  </div>
+
+</div>
+<div class="footer">回流焊 AI 工艺优化系统 · 详细技术方案 V2.0 · 含 SQL DDL、完整 API、部署拓扑、监控与 CI/CD</div>
+</body>
+</html>

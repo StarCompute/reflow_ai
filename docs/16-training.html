@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>16 培训/FAQ · 回流焊 AI 工艺优化系统</title>
+<style>
+  :root{--bg:#0f172a;--card:#1e293b;--line:#334155;--txt:#e2e8f0;--sub:#94a3b8;--accent:#38bdf8;--accent2:#22d3ee;--ok:#34d399;--warn:#fbbf24;--bad:#f87171}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;background:var(--bg);color:var(--txt);line-height:1.75}
+  a{color:var(--accent);text-decoration:none}
+  .wrap{max-width:1000px;margin:0 auto;padding:40px 24px 80px}
+  h1{font-size:30px;font-weight:800;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{color:var(--sub);margin:10px 0 28px}
+  h2{font-size:21px;margin:34px 0 12px;border-left:4px solid var(--accent);padding-left:12px}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+  th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+  th{background:var(--card);color:var(--accent);font-weight:700}
+  tr:nth-child(even) td{background:rgba(30,41,59,.5)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:14px 0}
+  .q{color:var(--warn);font-weight:700;font-size:15px}
+  .a{color:var(--txt);font-size:14px;margin-top:6px}
+  .who{display:inline-block;background:rgba(56,189,248,.15);color:var(--accent);border:1px solid rgba(56,189,248,.3);border-radius:999px;padding:2px 9px;font-size:12px}
+  .prevnext{display:flex;justify-content:space-between;margin-top:50px;border-top:1px solid var(--line);padding-top:20px}
+  .footer{text-align:center;color:var(--sub);font-size:13px;padding:28px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+<div id="nav" class="nav"></div>
+<script src="nav.js"></script>
+<div class="wrap">
+  <h1>16 · 培训计划 + 常见质疑 FAQ</h1>
+  <p class="lead">系统再好，人不愿用、人不会用也白搭。这里给培训安排，并提前回答老板/工人/IT 最可能抛出的反对。</p>
+
+  <h2>16.1 分层培训计划</h2>
+  <table>
+    <tr><th>对象</th><th>内容</th><th>形式</th><th>时长</th></tr>
+    <tr><td><span class="who">管理层</span></td><td>价值/ROI/风险红线/验收标准</td><td>立项汇报 1 次</td><td>1 小时</td></tr>
+    <tr><td><span class="who">工艺员</span></td><td>看板使用、如何采纳/微调建议、异常标记</td><td>实操+速查卡</td><td>2 小时</td></tr>
+    <tr><td><span class="who">老师傅</span></td><td>经验如何被记录、担任评审、知识库维护</td><td>访谈+工作坊</td><td>4~6 小时（分次）</td></tr>
+    <tr><td><span class="who">设备/IT</span></td><td>采集接口、数据链路、权限与安全</td><td>技术对接</td><td>按需</td></tr>
+    <tr><td><span class="who">新人</span></td><td>用知识库问答学工艺、跟 AI 建议上手</td><td>自学+导师</td><td>2 周出师（原 2 月）</td></tr>
+  </table>
+
+  <h2>16.2 常见质疑与应答（FAQ）</h2>
+
+  <div class="card">
+    <div class="q">❓ 老板："这东西会不会取代老师傅、让人失业？"</div>
+    <div class="a">答：定位是<b style="color:var(--ok)">辅助</b>不是取代。试点期只给建议、人确认；它把老师傅从重复调参里解放出来，去做更高价值的工艺改进。且老师傅经验被沉淀，反而让他的价值放大、可复制。</div>
+  </div>
+  <div class="card">
+    <div class="q">❓ 老板："投入几十万，值不值？"</div>
+    <div class="a">答：按示例工厂，仅返修一项年省约 72 万，<b style="color:var(--ok)">6~12 个月回本</b>；且减少换线工时、降低对个别人的依赖，战略价值更高。先最小试点验证再扩。</div>
+  </div>
+  <div class="card">
+    <div class="q">❓ 工人："AI 推荐的我不信，炸板谁负责？"</div>
+    <div class="a">答：① 工艺窗口是硬约束，越界参数 100% 被拦截；② 试点期"只建议不下发"，你确认后才执行；③ 保留一键回退，1 秒内回到原参数。责任清晰：建议可参考，决策在你。</div>
+  </div>
+  <div class="card">
+    <div class="q">❓ 老师傅："我的经验被拿走，我不重要了？"</div>
+    <div class="a">答：经验变成"全厂资产"，你从"唯一会调的人"变成"制定标准的人"，地位反而提升；系统把你的最佳实践固化，新人按你的方法做，你的影响力扩大。</div>
+  </div>
+  <div class="card">
+    <div class="q">❓ IT："接我们老系统会不会很麻烦、不安全？"</div>
+    <div class="a">答：采集优先用只读接口/边缘网关，<b style="color:var(--warn)">系统与产线 PLC 网络隔离</b>；下发走审批接口不直连；数据本地部署不出厂。改造量可控，有 WBS 与责任人。</div>
+  </div>
+  <div class="card">
+    <div class="q">❓ 质量："模型错了怎么办？"</div>
+    <div class="a">答：有离线回测(AUC≥0.85)、A/B 对比、安全拦截、人工确认四道防线；且模型持续用新数据迭代，越用越准，错了也会被反馈机制捕获重训。</div>
+  </div>
+
+  <div class="prevnext">
+    <a href="15-pilot.html">← 上一章：试点/选型</a>
+    <a href="17-acceptance.html">下一章：验收/立项 →</a>
+  </div>
+</div>
+<div class="footer">回流焊 AI 工艺优化系统 · 准备性文档 v1.0</div>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>15 试点/选型 · 回流焊 AI 工艺优化系统</title>
+<style>
+  :root{--bg:#0f172a;--card:#1e293b;--line:#334155;--txt:#e2e8f0;--sub:#94a3b8;--accent:#38bdf8;--accent2:#22d3ee;--ok:#34d399;--warn:#fbbf24;--bad:#f87171}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;background:var(--bg);color:var(--txt);line-height:1.75}
+  a{color:var(--accent);text-decoration:none}
+  .wrap{max-width:1000px;margin:0 auto;padding:40px 24px 80px}
+  h1{font-size:30px;font-weight:800;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{color:var(--sub);margin:10px 0 28px}
+  h2{font-size:21px;margin:34px 0 12px;border-left:4px solid var(--accent);padding-left:12px}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+  th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+  th{background:var(--card);color:var(--accent);font-weight:700}
+  tr:nth-child(even) td{background:rgba(30,41,59,.5)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin:16px 0}
+  .chk{color:var(--sub);font-size:14px}
+  .tag{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600}
+  .t-ok{background:rgba(52,211,153,.15);color:var(--ok);border:1px solid rgba(52,211,153,.3)}
+  .t-warn{background:rgba(251,191,36,.15);color:var(--warn);border:1px solid rgba(251,191,36,.3)}
+  .prevnext{display:flex;justify-content:space-between;margin-top:50px;border-top:1px solid var(--line);padding-top:20px}
+  .footer{text-align:center;color:var(--sub);font-size:13px;padding:28px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+<div id="nav" class="nav"></div>
+<script src="nav.js"></script>
+<div class="wrap">
+  <h1>15 · 试点选择 + 技术选型（自建 vs 采购）</h1>
+  <p class="lead">这两件事常被漏想：试点选错全盘皆输；选型错则钱白花。下面给可操作的判断标准。</p>
+
+  <h2>15.1 试点产线/产品选择标准</h2>
+  <div class="card">
+    <p class="chk">□ <b>数据较全</b>：该线已有炉温测试仪习惯、AOI/X-Ray 数据可导出（追溯易打通）</p>
+    <p class="chk">□ <b>代表性</b>：含 BGA/QFN 等高风险元件，能体现 AI 价值</p>
+    <p class="chk">□ <b>换线频繁</b>：返修/试错成本高的产品，ROI 最明显</p>
+    <p class="chk">□ <b>配合度高</b>：线长/工艺员愿意试新系统，抵触小</p>
+    <p class="chk">□ <b>设备可控</b>：炉子非极老旧、至少有手动设定接口</p>
+    <p class="chk">□ <b>影响可控</b>：非核心大客户唯一产品，试错有缓冲</p>
+  </div>
+  <p style="color:var(--sub);font-size:14px">建议：选 <b>1 条线 + 2 类板</b>（一类简单板验证流程，一类复杂板验证效果），避免一上来就挑最难产品。</p>
+
+  <h2>15.2 技术选型：自建 vs 采购 vs 混合</h2>
+  <table>
+    <tr><th>维度</th><th>完全自建</th><th>采购成熟方案</th><th>混合（推荐）</th></tr>
+    <tr><td>适合</td><td>有算法团队、要深度定制</td><td>想快上、无开发人力</td><td>有 IT 但算法弱</td></tr>
+    <tr><td>周期</td><td>6~12 月</td><td>1~3 月</td><td>3~6 月</td></tr>
+    <tr><td>成本</td><td>高（人力为主）</td><td>中~高（license/订阅）</td><td>中</td></tr>
+    <tr><td>数据掌控</td><td><span class="tag t-ok">完全自有</span></td><td>可能在厂商云</td><td>核心数据留本地</td></tr>
+    <tr><td>可解释/可控</td><td><span class="tag t-ok">高</span></td><td>黑盒、依赖厂商</td><td>模型自研、界面可改</td></tr>
+    <tr><td>风险</td><td>人才依赖、周期长</td><td>适配差、被绑定</td><td>需集成能力</td></tr>
+  </table>
+  <div class="card" style="font-size:14px">
+    <b style="color:var(--accent)">推荐路径：</b>采集与数据层自建（数据主权必须握在自己手里）→ 模型层可先用开源/自研 XGBoost 起步 → 知识库用开源大模型本地部署（避免工艺机密上云）。只有"炉温仿真"这类专业模块可考虑采购。
+  </div>
+
+  <h2>15.3 供应商评估 Checklist（若采购）</h2>
+  <div class="card">
+    <p class="chk">□ 是否有 SMT/回流焊行业落地案例？</p>
+    <p class="chk">□ 是否支持本地部署、数据不出厂？</p>
+    <p class="chk">□ 模型是否可解释（能给"为什么这么设"）？</p>
+    <p class="chk">□ 是否开放接口，便于接入自有 MES？</p>
+    <p class="chk">□ 越界参数是否有硬拦截（安全红线）？</p>
+    <p class="chk">□ 按效果付费/分阶段验收的可行性？</p>
+  </div>
+
+  <div class="prevnext">
+    <a href="14-datadict.html">← 上一章：数据字典</a>
+    <a href="16-training.html">下一章：培训/FAQ →</a>
+  </div>
+</div>
+<div class="footer">回流焊 AI 工艺优化系统 · 准备性文档 v1.0</div>
+</body>
+</html>

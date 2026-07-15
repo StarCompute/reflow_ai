@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数据采集清单 & AI 算法处理逻辑清单 · 回流焊 AI 工艺优化系统</title>
+<style>
+  :root{--bg:#0f172a;--card:#1e293b;--line:#334155;--txt:#e2e8f0;--sub:#94a3b8;--accent:#38bdf8;--accent2:#22d3ee;--ok:#34d399;--warn:#fbbf24;--bad:#f87171;--purple:#a78bfa}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;background:var(--bg);color:var(--txt);line-height:1.78}
+  a{color:var(--accent);text-decoration:none}
+  .wrap{max-width:1140px;margin:0 auto;padding:44px 28px 80px}
+  h1{font-size:28px;font-weight:800;background:linear-gradient(90deg,var(--accent),var(--accent2),var(--purple));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .badge{display:inline-block;background:var(--accent);color:#06121f;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:800;letter-spacing:.5px;margin-left:10px;vertical-align:middle}
+  .lead{color:var(--sub);margin:12px 0 30px;font-size:15px}
+  h2{font-size:22px;margin:46px 0 14px;border-left:4px solid var(--accent);padding-left:12px;scroll-margin-top:20px}
+  h3{font-size:17px;margin:22px 0 8px;color:var(--accent2)}
+  h4{font-size:14.5px;margin:16px 0 6px;color:var(--accent)}
+  p{font-size:14px;color:var(--txt);margin:6px 0}
+  code{background:#0b1220;padding:2px 7px;border-radius:5px;color:var(--accent2);font-size:13px}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px}
+  th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+  th{background:var(--card);color:var(--accent);font-weight:700;white-space:nowrap}
+  tr:nth-child(even) td{background:rgba(30,41,59,.5)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin:16px 0;font-size:14px}
+  .card.warn{border-color:var(--warn);border-left:4px solid var(--warn)}
+  .card.ok{border-color:var(--ok);border-left:4px solid var(--ok);background:rgba(52,211,153,.05)}
+  .toc{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 24px;margin:18px 0;columns:2;column-gap:24px}
+  .toc a{display:block;font-size:13px;padding:3.5px 0;color:var(--sub)}
+  .toc a:hover{color:var(--accent)}
+  .tag{display:inline-block;padding:2px 10px;border-radius:999px;font-size:11.5px;font-weight:600}
+  .t-ok{background:rgba(52,211,153,.15);color:var(--ok);border:1px solid rgba(52,211,153,.3)}
+  .t-warn{background:rgba(251,191,36,.15);color:var(--warn);border:1px solid rgba(251,191,36,.3)}
+  .t-bad{background:rgba(248,113,113,.15);color:var(--bad);border:1px solid rgba(248,113,113,.3)}
+  .t-info{background:rgba(56,189,248,.15);color:var(--accent);border:1px solid rgba(56,189,248,.3)}
+  .prevnext{display:flex;justify-content:space-between;margin-top:60px;border-top:1px solid var(--line);padding-top:22px;gap:14px}
+  .footer{text-align:center;color:var(--sub);font-size:13px;padding:30px;border-top:1px solid var(--line)}
+  .part{display:inline-block;background:var(--accent);color:#06121f;font-weight:800;font-size:13px;padding:4px 14px;border-radius:8px;margin-bottom:6px}
+  /* 可勾选清单 */
+  .chk{display:block;padding:9px 13px;margin:6px 0;background:var(--card);border:1px solid var(--line);border-radius:10px;font-size:14px;cursor:pointer;transition:.15s}
+  .chk:hover{border-color:var(--accent)}
+  .chk input{margin-right:10px;accent-color:var(--ok);width:16px;height:16px;vertical-align:-2px}
+  .chk.done{opacity:.55;text-decoration:line-through;color:var(--ok)}
+  .chkhint{font-size:12px;color:var(--sub);margin:8px 0 2px}
+  ul,ol{margin:6px 0 6px 22px}
+  li{margin:5px 0;font-size:14px}
+</style>
+</head>
+<body>
+<div id="nav" class="nav"></div>
+<script src="nav.js"></script>
+<div class="wrap">
+
+  <h1>数据采集清单 &amp; AI 算法处理逻辑清单<span class="badge">V2 配套</span></h1>
+  <p class="lead">本文件是 <a href="tech-design-v2.html">技术方案 V2</a> 的<b style="color:var(--ok)">落地交付清单</b>，分两大部分：<br>
+  <b>① 数据采集清单</b>——要采什么、从哪采、怎么采、谁负责、质量红线、实施勾选；<b>② AI 算法处理逻辑清单</b>——三个核心模型与端到端链路的输入输出、处理步骤、约束与验收。<br>
+  字段口径与 <a href="14-datadict.html">14 数据字典</a> 完全一致，可直接交给采集开发与算法团队执行。</p>
+
+  <div class="toc">
+    <a href="#p1">第一部分 · 数据采集清单</a>
+    <a href="#s11">1.1 采集矩阵总表（9 大数据源）</a>
+    <a href="#s12">1.2 各源字段明细</a>
+    <a href="#s13">1.3 采集质量红线（8 条校验）</a>
+    <a href="#s14">1.4 采集实施 Checklist（可勾选）</a>
+    <a href="#p2">第二部分 · AI 算法处理逻辑清单</a>
+    <a href="#s21">2.1 端到端处理链路</a>
+    <a href="#s22">2.2 模型1 · 工艺代理模型</a>
+    <a href="#s23">2.3 模型2 · 质量预测模型</a>
+    <a href="#s24">2.4 模型3 · 参数推荐引擎</a>
+    <a href="#s25">2.5 算法处理 Checklist（可勾选）</a>
+    <a href="#s26">2.6 算法验收指标总表</a>
+  </div>
+
+  <!-- ================= 第一部分 ================= -->
+  <h2 id="p1">第一部分 · 数据采集清单</h2>
+  <span class="part">采集层 · 一切模型的地基</span>
+  <p>原则：<b>板级可追溯</b>（run_id → lot_id → sn 100% 串联）、<b>数据不出厂</b>、<b>采集即校验</b>。下面所有字段落库位置见 <a href="tech-design-v2.html#s4">V2 §4</a> 与 <a href="14-datadict.html">数据字典</a>。</p>
+
+  <h3 id="s11">1.1 采集矩阵总表（9 大数据源）</h3>
+  <table>
+    <tr><th>数据源</th><th>采集内容</th><th>关键字段</th><th>协议/方式</th><th>频率</th><th>落库</th><th>必填</th><th>责任人</th></tr>
+    <tr><td>回流焊炉 PLC</td><td>温区设定、链速、风量、氧含量、运行状态、报警</td><td><code>zone1~10_temp, chain_speed, air_volume, oxygen_ppm, oven_status, alarm</code></td><td>OPC UA / Modbus TCP</td><td>设定值 1Hz 实时；状态事件即时</td><td>MySQL <code>reflow_run</code></td><td><span class="t-ok tag">是</span></td><td>设备工程师</td></tr>
+    <tr><td>炉温测试仪 Profiler</td><td>6 通道实测温度曲线</td><td><code>run_id, sample_time, tc1~6_temp, board_position</code></td><td>串口 / 文件导入 / 采集网关</td><td>1~2s/点，每炉次一批</td><td>InfluxDB <code>profile_signal</code></td><td><span class="t-ok tag">是</span></td><td>工艺 / 采集网关</td></tr>
+    <tr><td>SPI（锡膏印刷）</td><td>印刷厚度、体积、面积、偏移、桥连</td><td><code>sn, spi_thickness, spi_volume, spi_offset</code></td><td>设备 API / SECS-GEM</td><td>每板</td><td><code>quality_result</code>（扩展字段）</td><td><span class="t-info tag">推荐</span></td><td>质量工程师</td></tr>
+    <tr><td>AOI（自动光学）</td><td>外观缺陷 PASS/FAIL、类型、坐标</td><td><code>sn, aoi_result, defect_type, defect_coords</code></td><td>设备 API</td><td>每板</td><td><code>quality_result</code></td><td><span class="t-ok tag">是*</span></td><td>质量工程师</td></tr>
+    <tr><td>X-Ray</td><td>BGA 空洞率</td><td><code>sn, xray_void_rate</code></td><td>设备 API</td><td>抽检 / 全检 BGA 板</td><td><code>quality_result</code></td><td><span class="t-info tag">关键</span></td><td>质量工程师</td></tr>
+    <tr><td>ICT / FCT（电气）</td><td>电气测试 PASS/FAIL</td><td><code>sn, ict_result</code></td><td>设备 API / MES</td><td>每板</td><td><code>quality_result</code></td><td><span class="t-info tag">推荐</span></td><td>测试工程师</td></tr>
+    <tr><td>MES</td><td>产品型号、批次、BOM（板厚/铜面积/BGA/密度）、工号、过炉时间</td><td><code>product_id, lot_id, bom.*, operator_id, start/end_time</code></td><td>REST API / DB 同步</td><td>每炉次</td><td><code>reflow_run</code> + <code>bom</code> 维表</td><td><span class="t-ok tag">是</span></td><td>IT / MES 管理员</td></tr>
+    <tr><td>环境传感器</td><td>车间温湿度</td><td><code>env_temp, env_humidity, ts</code></td><td>MQTT / Modbus</td><td>1~5min</td><td>MySQL <code>env_log</code></td><td><span class="t-info tag">推荐</span></td><td>设备工程师</td></tr>
+    <tr><td>锡膏管理</td><td>锡膏型号、批次、回温时长、有效期</td><td><code>solder_paste, paste_lot, thaw_min, expiry</code></td><td>扫码 / 手动录入</td><td>每批上线</td><td><code>solder_paste</code> 维表</td><td><span class="t-ok tag">是</span></td><td>物料员</td></tr>
+  </table>
+  <p style="font-size:12px;color:var(--sub)">* AOI 为外观必检；无 AOI 的产线须以人工复判结果入库（<code>defect_type</code> 由复判录入）。</p>
+
+  <h3 id="s12">1.2 各源字段明细（采集侧视角）</h3>
+
+  <h4>① 炉子 PLC → <code>reflow_run</code></h4>
+  <table>
+    <tr><th>字段</th><th>类型</th><th>范围/格式</th><th>采集方式</th><th>校验</th></tr>
+    <tr><td><code>run_id</code></td><td>string</td><td><code>R-YYMMDD-NNNN</code></td><td>系统生成（过炉触发）</td><td>唯一、非空</td></tr>
+    <tr><td><code>oven_id</code></td><td>string</td><td><code>OVEN-xx</code></td><td>PLC 标识</td><td>枚举校验</td></tr>
+    <tr><td><code>zone1~10_temp</code></td><td>float</td><td>室温~350℃</td><td>OPC UA 节点订阅</td><td>递增合理性（升温段须 &lt; 峰值）</td></tr>
+    <tr><td><code>chain_speed</code></td><td>float</td><td>40~120 cm/min</td><td>PLC</td><td>边界 [40,120]</td></tr>
+    <tr><td><code>air_volume</code></td><td>float</td><td>0~100 %</td><td>PLC</td><td>可选</td></tr>
+    <tr><td><code>oxygen_ppm</code></td><td>int</td><td>氮气氛 &lt;1000ppm</td><td>氧传感器</td><td>可选；非空则 &lt;2000</td></tr>
+    <tr><td><code>start_time / end_time</code></td><td>datetime</td><td>ISO8601</td><td>PLC 过炉事件</td><td>NTP 对齐，end&gt;start</td></tr>
+    <tr><td><code>operator_id</code></td><td>string</td><td>工号</td><td>MES</td><td>可选（人因分析用）</td></tr>
+  </table>
+
+  <h4>② 炉温测试仪 → InfluxDB <code>profile_signal</code></h4>
+  <table>
+    <tr><th>字段</th><th>类型</th><th>范围</th><th>采集方式</th><th>校验</th></tr>
+    <tr><td><code>run_id</code>（Tag）</td><td>string</td><td>关联外键</td><td>Profiler 绑定</td><td>必须对应已存在的 run</td></tr>
+    <tr><td><code>oven_id / product_id</code>（Tag）</td><td>string</td><td>—</td><td>Profiler 配置</td><td>非空</td></tr>
+    <tr><td><code>tc1~6_temp</code>（Field）</td><td>float</td><td>室温~350℃</td><td>热电偶采样</td><td>每通道点数 ≥60；缺失通道补值并标记</td></tr>
+    <tr><td><code>board_position</code>（Field）</td><td>string</td><td>前/中/后</td><td>Profiler</td><td>可选</td></tr>
+    <tr><td><code>sample_time</code></td><td>timestamp</td><td>ns 精度</td><td>Profiler 时钟</td><td>NTP 对齐，误差&lt;1s</td></tr>
+  </table>
+
+  <h4>③ 质量检测 → <code>quality_result</code></h4>
+  <table>
+    <tr><th>字段</th><th>类型</th><th>范围</th><th>来源</th><th>校验</th></tr>
+    <tr><td><code>lot_id / sn</code></td><td>string</td><td>批次/单板</td><td>MES / AOI</td><td>必须能关联 run_id</td></tr>
+    <tr><td><code>aoi_result</code></td><td>enum</td><td>PASS/FAIL</td><td>AOI</td><td>非空</td></tr>
+    <tr><td><code>xray_void_rate</code></td><td>float</td><td>0~100%</td><td>X-Ray</td><td>BGA 板建议必填</td></tr>
+    <tr><td><code>ict_result</code></td><td>enum</td><td>PASS/FAIL</td><td>ICT</td><td>可选</td></tr>
+    <tr><td><code>defect_type</code></td><td>enum</td><td>无/虚焊/桥连/立碑/空洞/锡珠/其他</td><td>复判</td><td>非空</td></tr>
+    <tr><td><code>defect_count</code></td><td>int</td><td>≥0</td><td>复判</td><td>≥0</td></tr>
+    <tr><td><code>repair_flag</code></td><td>bool</td><td>0/1</td><td>MES</td><td>非空（核心标签）</td></tr>
+    <tr><td><code>inspect_time</code></td><td>datetime</td><td>ISO8601</td><td>检测设备</td><td>与过炉时间可对齐</td></tr>
+  </table>
+
+  <h4>④ MES / BOM / 锡膏 / 环境 → 维表</h4>
+  <table>
+    <tr><th>表</th><th>关键字段</th><th>用途</th><th>校验</th></tr>
+    <tr><td><code>bom</code></td><td><code>thickness_mm, copper_area_pct, bga_count, max_bga_size_mm, component_density</code></td><td>质量模型输入 9~14 维</td><td>板厚/铜面积/BGA 缺失则质量模型降级</td></tr>
+    <tr><td><code>solder_paste</code></td><td><code>paste_model, paste_lot, thaw_min, expiry</code></td><td>推荐引擎输入 + 追溯</td><td>回温不足 / 过期须告警</td></tr>
+    <tr><td><code>env_log</code></td><td><code>env_temp, env_humidity, ts</code></td><td>特征 15~16 维</td><td>湿度&gt;60%RH 标记预警</td></tr>
+  </table>
+
+  <h3 id="s13">1.3 采集质量红线（8 条自动校验）</h3>
+  <div class="card warn">
+    <p>以下任一条不满足，采集网关须<b style="color:var(--warn)">标记该炉次为异常并告警</b>，不进入训练集；人工复核后可放行或剔除。</p>
+    <ol>
+      <li><b>run_id 唯一且必填</b>，格式 <code>R-YYMMDD-NNNN</code>，重复即冲突。</li>
+      <li><b>曲线完整性</b>：每通道采样点 ≥ 60 点，否则判采集失败触发重测。</li>
+      <li><b>物理合理性</b>：实测峰值与设定峰值偏差 &gt; 30℃ 报警（疑似传感器/炉子异常）。</li>
+      <li><b>追溯率 100%</b>：质量结果 <code>lot_id</code> 必须能关联到 <code>run_id</code>。</li>
+      <li><b>时间对齐</b>：炉子/Profiler/服务器统一 NTP，时间戳误差 &lt; 1s。</li>
+      <li><b>缺失通道补值</b>：按同炉次邻近通道均值补，并置 <code>imputed=1</code> 标记。</li>
+      <li><b>BGA 板双检</b>：AOI 与 X-Ray 对 BGA 板至少一项须存在。</li>
+      <li><b>BOM 完整性</b>：板厚/铜面积/BGA 数缺失 → 质量模型降级为"仅曲线特征"模式。</li>
+    </ol>
+  </div>
+
+  <h3 id="s14">1.4 采集实施 Checklist（现场勾选）</h3>
+  <p class="chkhint">提示：勾选状态仅保存在本页会话，刷新清除；建议打印或导出 PDF 用于现场核对。</p>
+  <label class="chk"><input type="checkbox"> PLC OPC UA 节点清单确认 &amp; 点位映射表完成</label>
+  <label class="chk"><input type="checkbox"> 老旧设备协议转换器（Modbus→OPC UA）采购与部署</label>
+  <label class="chk"><input type="checkbox"> Profiler 采样率统一 1~2s/点，输出格式标准化</label>
+  <label class="chk"><input type="checkbox"> SPI / AOI / X-Ray / ICT 设备接口对接（SECS-GEM 或 REST）</label>
+  <label class="chk"><input type="checkbox"> MES BOM 字段补齐（板厚 / 铜面积 / BGA 数 / 最大 BGA / 元件密度）</label>
+  <label class="chk"><input type="checkbox"> 环境温湿度传感器部署 + MQTT 上报</label>
+  <label class="chk"><input type="checkbox"> 锡膏扫码 / 录入流程上线（型号 / 批次 / 回温 / 有效期）</label>
+  <label class="chk"><input type="checkbox"> NTP 时间同步（炉子 / Profiler / 服务器）</label>
+  <label class="chk"><input type="checkbox"> 采集网关（树莓派）部署 × 炉数，断点续传 + 30s 心跳</label>
+  <label class="chk"><input type="checkbox"> 数据校验脚本上线（上述 8 条红线自动校验）</label>
+  <label class="chk"><input type="checkbox"> 板级追溯串联验证（随机抽 100 炉次 run_id→lot_id→sn 全通）</label>
+  <label class="chk"><input type="checkbox"> 采集监控看板（数据源在线率 / 曲线完整率）上线</label>
+
+  <!-- ================= 第二部分 ================= -->
+  <h2 id="p2">第二部分 · AI 算法处理逻辑清单</h2>
+  <span class="part">模型层 · 三个核心模型 + 端到端链路</span>
+  <p>算法口径与 <a href="tech-design-v2.html#s5">V2 §5~§7</a> 一致。每个模型给出<b>输入 → 处理逻辑 → 输出 → 约束 → 验收</b>，可直接作为算法开发与 Code Review 的核对基准。</p>
+
+  <h3 id="s21">2.1 端到端处理链路</h3>
+  <div class="card">
+    <p style="font-size:14px;letter-spacing:.5px"><b style="color:var(--accent)">采集</b> → <b style="color:var(--accent)">落库</b>(MySQL+InfluxDB) → <b style="color:var(--purple)">特征计算</b>(profile_feature) → <b style="color:var(--purple)">模型推理</b>(代理→质量→推荐) → <b style="color:var(--ok)">人确认下发</b>(audit) → <b style="color:var(--warn)">质量反馈回灌</b>(数据飞轮)</p>
+    <p style="font-size:13px;color:var(--sub);margin-top:6px">反馈闭环：每次下发后的 AOI/X-Ray/ICT 结果回流到 <code>quality_result</code> → 重训练样本 → 模型月月更准（见 <a href="10-improve.html">10 改进</a>）。</p>
+  </div>
+
+  <h3 id="s22">2.2 模型1 · 工艺代理模型（Surrogate）</h3>
+  <table>
+    <tr><th style="width:120px">项</th><th>内容</th></tr>
+    <tr><td>目标</td><td>设定值（温区×10 + 链速 + 风量）→ 预测 6 通道炉温曲线</td></tr>
+    <tr><td>输入</td><td>11 维设定 +（可选）环境温/湿；维度与 <code>reflow_run</code> 一致</td></tr>
+    <tr><td>处理逻辑</td><td>① 物理热模型 <code>SimpleThermalSolver</code> 出基线（传热方程，保物理下限）<br>② 神经网络残差 <code>residual_nn</code> 校正（PINN，6×180 输出）<br>③ 最终 = 物理基线 + NN 残差</td></tr>
+    <tr><td>输出</td><td>6×180 预测曲线（供特征计算与推荐引擎评估）</td></tr>
+    <tr><td>训练数据</td><td>历史所有炉次 (设定值, 实测曲线) 对；小样本阶段物理模型兜底，数据增多 NN 渐主导</td></tr>
+    <tr><td>约束 / 安全</td><td>物理合理性：升温段须递增、峰值落合理区间；避免出现物理不可能的曲线（如峰值 400℃）</td></tr>
+    <tr><td>验收</td><td>预测曲线 vs 实测 RMSE &lt; 阈值（例：±5℃ 内占比 ≥ 95%）</td></tr>
+  </table>
+
+  <h3 id="s23">2.3 模型2 · 质量预测模型（Quality）</h3>
+  <table>
+    <tr><th style="width:120px">项</th><th>内容</th></tr>
+    <tr><td>目标</td><td>曲线特征(8) + 板/锡膏元信息(8) → 各缺陷类型概率 + 预测良率</td></tr>
+    <tr><td>输入</td><td>16 维（见 <a href="tech-design-v2.html#s5">V2 §5.2</a>）：peak_temp / TAL / ramp_up / ramp_down / delta_t / soak_temp / time_above_183 / curve_duration + 板厚 / 铜面积 / BGA 数 / 最大 BGA / 锡膏编码 / 元件密度 / 环境温度 / 湿度</td></tr>
+    <tr><td>处理逻辑</td><td>多标签 <code>XGBoost</code>（<code>MultiOutputClassifier</code>），每缺陷一个二分类；<code>scale_pos_weight=15</code> 加权补偿坏板稀少（坏:好≈1:30）；<code>early_stopping_rounds=30</code></td></tr>
+    <tr><td>输出</td><td>虚焊 / 桥连 / 立碑 / 空洞 / 锡珠 五类概率 + 预测良率；附 SHAP 归因（可解释）</td></tr>
+    <tr><td>训练数据</td><td>3.2 万+ 炉次（曲线特征 + 质量标签）；坏板过采样/合成补偿</td></tr>
+    <tr><td>约束 / 安全</td><td>样本不平衡处理；输出概率须可审计回溯；BOM 缺失时降级为"仅曲线特征"</td></tr>
+    <tr><td>验收</td><td>每缺陷类型 <b>AUC ≥ 0.85</b>，<b>召回率 ≥ 0.80</b></td></tr>
+  </table>
+
+  <h3 id="s24">2.4 模型3 · 参数推荐引擎（Recommender）</h3>
+  <table>
+    <tr><th style="width:120px">项</th><th>内容</th></tr>
+    <tr><td>目标</td><td>新板 BOM + 锡膏 + 工艺窗口 → top-k 最优温区设定 + 链速</td></tr>
+    <tr><td>输入</td><td><code>product_id, solder_paste, bom{...}, constraints{peak_min/max, tal_min/max, ...}</code>（见 <a href="tech-design-v2.html#s9">V2 §9 recommend 请求</a>）</td></tr>
+    <tr><td>处理逻辑</td><td>贝叶斯优化在代理模型上搜 11 维空间：<br>① 代理模型预测曲线 → ② 提取特征 → ③ 质量模型预测缺陷概率 → ④ 工艺窗口罚分 → 目标=最小化缺陷概率<br>init_points=12, n_iter=36（≈10⁶ 等效评估，毫秒级/次）</td></tr>
+    <tr><td>输出</td><td>top-3 设定 + 预测良率 score + SHAP 解释（top3 特征）+ 风险清单（类型/概率/缓解）</td></tr>
+    <tr><td>约束 / 安全</td><td>硬约束注入：<code>peak∈[235,250]</code>, <code>TAL∈[45,90]</code>, <code>ramp_up∈[1,3]</code>；<b>越界 100% 拦截不进入结果</b>；异常自动回退历史最优设定</td></tr>
+    <tr><td>验收</td><td>推荐炉次平均良率 <b>≥ 同产品老师傅手调 +1.5pp</b>；良率波动 σ <b>降低 ≥40%</b></td></tr>
+  </table>
+  <div class="card ok" style="font-size:13px">
+    <b style="color:var(--ok)">RAG 知识库（问答侧，非工艺模型）：</b>本地 <code>Qwen-7B</code> 大模型 + <code>BGE-M3</code> Embedding（1024d）→ pgvector 检索 Top-5 → 带引用回答。全链路本地，数据不出厂。若贵司已切换其他大模型，请同步更新此处选型（见文末说明）。
+  </div>
+
+  <h3 id="s25">2.5 算法处理 Checklist（开发勾选）</h3>
+  <p class="chkhint">提示：勾选状态仅保存在本页会话，刷新清除。</p>
+  <label class="chk"><input type="checkbox"> 特征计算 pipeline（<code>extract_features</code>）上线，自动写入 <code>profile_feature</code></label>
+  <label class="chk"><input type="checkbox"> 工艺窗口校验服务（peak / TAL / ramp 边界）上线</label>
+  <label class="chk"><input type="checkbox"> 代理模型训练脚本（PINN：物理基线 + NN 残差）+ 物理兜底</label>
+  <label class="chk"><input type="checkbox"> 质量模型训练（多标签 XGBoost，加权）+ SHAP 归因输出</label>
+  <label class="chk"><input type="checkbox"> 推荐引擎（贝叶斯优化）+ 约束注入 + top-k 输出</label>
+  <label class="chk"><input type="checkbox"> 越界硬拦截 + 历史最优设定回退机制</label>
+  <label class="chk"><input type="checkbox"> 离线回测脚本（3.2 万炉次：AUC / 召回 / 精确率）</label>
+  <label class="chk"><input type="checkbox"> 模型 Registry 版本化（MLflow：staging→production）</label>
+  <label class="chk"><input type="checkbox"> 灰度发布（canary 10%→100%）+ 在线漂移监控</label>
+  <label class="chk"><input type="checkbox"> 反馈回灌 pipeline（feedback → 标注 → 重训练）</label>
+
+  <h3 id="s26">2.6 算法验收指标总表</h3>
+  <table>
+    <tr><th>维度</th><th>指标</th><th>目标</th><th>对应模型/环节</th></tr>
+    <tr><td>超越老师傅</td><td>AI 推荐良率 vs 同产品手调</td><td><span class="t-ok tag">≥ +1.5pp</span></td><td>推荐引擎 + 质量模型</td></tr>
+    <tr><td>稳定性</td><td>良率波动 σ</td><td><span class="t-ok tag">↓ ≥40%</span></td><td>全链路</td></tr>
+    <tr><td>首炉即合格</td><td>新板首炉合格率</td><td><span class="t-ok tag">≥ 92%</span></td><td>推荐引擎</td></tr>
+    <tr><td>预测精度</td><td>每缺陷类型 AUC</td><td><span class="t-ok tag">≥ 0.85</span></td><td>质量模型</td></tr>
+    <tr><td>预测召回</td><td>每缺陷类型 召回率</td><td><span class="t-ok tag">≥ 0.80</span></td><td>质量模型</td></tr>
+    <tr><td>代理精度</td><td>预测曲线 vs 实测 RMSE</td><td><span class="t-ok tag">±5℃ 内 ≥95%</span></td><td>代理模型</td></tr>
+    <tr><td>服务性能</td><td>/recommend p99 延迟</td><td><span class="t-ok tag">&lt; 2s</span></td><td>API / 推理</td></tr>
+    <tr><td>安全红线</td><td>越界参数拦截率</td><td><span class="t-bad tag">100%</span></td><td>约束注入</td></tr>
+    <tr><td>可用性</td><td>推荐采纳率</td><td><span class="t-ok tag">≥ 80%</span></td><td>人因 / 可解释</td></tr>
+    <tr><td>数据地基</td><td>采集完整率 / 追溯率</td><td><span class="t-ok tag">≥99% / 100%</span></td><td>采集层</td></tr>
+  </table>
+
+  <div class="card" style="font-size:13px;color:var(--sub)">
+    <b style="color:var(--warn)">关于"已切换大模型"：</b>上一轮已按"切换大模型"重写技术方案 V2，其中 RAG 知识库默认采用本地 <code>Qwen-7B</code> + <code>BGE-M3</code>。若贵司实际切换的是<b>其他基座模型</b>（如不同参数量 / 厂商 / 云端或本地），请告知具体选型，我会同步更新本文 2.4 节 RAG 段与 V2 §8 的模型名称、Embedding 维度（当前 1024/1536）及硬件配置。三个核心<b>工艺模型（代理/质量/推荐）不受大模型切换影响</b>。
+  </div>
+
+  <div class="prevnext">
+    <a href="index.html">← 返回首页</a>
+    <div>
+      <a href="tech-design-v2.html" style="margin-right:16px">技术方案 V2 →</a>
+      <a href="14-datadict.html">数据字典 →</a>
+    </div>
+  </div>
+
+</div>
+<div class="footer">回流焊 AI 工艺优化系统 · 数据采集清单 &amp; AI 算法处理逻辑清单（V2 配套）· 内部资料</div>
+<script>
+  document.querySelectorAll('.chk input').forEach(function(c){
+    c.addEventListener('change', function(){
+      c.closest('.chk').classList.toggle('done', c.checked);
+    });
+  });
+</script>
+</body>
+</html>

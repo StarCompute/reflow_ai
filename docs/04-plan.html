@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>04 计划 · 回流焊 AI 工艺优化系统</title>
+<style>
+  :root{--bg:#0f172a;--card:#1e293b;--line:#334155;--txt:#e2e8f0;--sub:#94a3b8;--accent:#38bdf8;--accent2:#22d3ee;--ok:#34d399;--warn:#fbbf24;--bad:#f87171}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;background:var(--bg);color:var(--txt);line-height:1.75}
+  a{color:var(--accent);text-decoration:none}
+  .nav{position:sticky;top:0;background:rgba(15,23,42,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:12px 24px;display:flex;gap:14px;flex-wrap:wrap;z-index:10}
+  .nav a{font-size:13px;color:var(--sub)} .nav a:hover{color:var(--accent)} .nav .home{color:var(--accent);font-weight:700}
+  .wrap{max-width:980px;margin:0 auto;padding:40px 24px 80px}
+  h1{font-size:30px;font-weight:800;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{color:var(--sub);margin:10px 0 28px}
+  h2{font-size:21px;margin:34px 0 12px;border-left:4px solid var(--accent);padding-left:12px}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+  th,td{border:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}
+  th{background:var(--card);color:var(--accent);font-weight:700}
+  tr:nth-child(even) td{background:rgba(30,41,59,.5)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin:16px 0}
+  .prevnext{display:flex;justify-content:space-between;margin-top:50px;border-top:1px solid var(--line);padding-top:20px}
+  .footer{text-align:center;color:var(--sub);font-size:13px;padding:28px;border-top:1px solid var(--line)}
+  .pill{display:inline-block;background:rgba(56,189,248,.15);color:var(--accent);border:1px solid rgba(56,189,248,.3);border-radius:999px;padding:3px 10px;font-size:12px;margin:3px 4px 0 0}
+  .diagram{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin:16px 0}
+  .diagram svg{display:block;width:100%;height:auto}
+  .diagram .cap{color:var(--sub);font-size:13px;text-align:center;margin-top:10px}
+</style>
+</head>
+<body>
+<div id="nav" class="nav"></div>
+<script src="nav.js"></script>
+<div class="wrap">
+  <h1>04 · 计划：谁、在什么时候、交什么</h1>
+  <p class="lead">试点周期约 6 个月，分阶段交付，P2 与 P3 可并行。</p>
+
+  <h2>4.1 总体时间表（试点 6 个月）</h2>
+  <table>
+    <tr><th>阶段</th><th>时间</th><th>主要交付物</th><th>负责角色</th></tr>
+    <tr><td>P0 准备与立项</td><td>第 1~3 周</td><td>本文档定稿、团队组建、试点线选定</td><td>项目经理+管理层</td></tr>
+    <tr><td>P1 数据与工艺梳理</td><td>第 3~8 周</td><td>数据源清单、数据字典、工艺窗口标准、经验萃取表</td><td>工艺+IT</td></tr>
+    <tr><td>P2 采集与打通</td><td>第 6~12 周</td><td>设备联网、追溯链路打通、历史数据入库</td><td>设备+IT</td></tr>
+    <tr><td>P3 建模开发</td><td>第 10~18 周</td><td>代理模型+质量预测模型+推荐引擎（辅助版）</td><td>算法</td></tr>
+    <tr><td>P4 测试验证</td><td>第 16~22 周</td><td>离线回测报告、A/B 对比、验收评审</td><td>全员</td></tr>
+    <tr><td>P5 试点实施</td><td>第 20~24 周</td><td>上线辅助系统、培训、运行监控</td><td>工艺+IT</td></tr>
+    <tr><td>持续</td><td>长期</td><td>反馈看板、模型迭代、推广</td><td>全员</td></tr>
+  </table>
+
+  <h2>4.1.1 时间轴甘特图</h2>
+  <div class="diagram">
+    <svg viewBox="0 0 820 290" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Microsoft YaHei, sans-serif">
+      <g stroke="#1e293b"><line x1="60" y1="34" x2="60" y2="250"/><line x1="240" y1="34" x2="240" y2="250"/><line x1="420" y1="34" x2="420" y2="250"/><line x1="600" y1="34" x2="600" y2="250"/><line x1="780" y1="34" x2="780" y2="250"/></g>
+      <g fill="#64748b" font-size="10" text-anchor="middle"><text x="60" y="26">0</text><text x="240" y="26">6</text><text x="420" y="26">12</text><text x="600" y="26">18</text><text x="780" y="26">24周</text></g>
+      <g font-size="12" fill="#cbd5e1" text-anchor="end">
+        <text x="52" y="53">P0 准备立项</text>
+        <text x="52" y="83">P1 数据工艺</text>
+        <text x="52" y="113">P2 采集打通</text>
+        <text x="52" y="143">P3 建模开发</text>
+        <text x="52" y="173">P4 测试验证</text>
+        <text x="52" y="203">P5 试点实施</text>
+        <text x="52" y="233">持续迭代</text>
+      </g>
+      <g>
+        <rect x="90" y="40" width="60" height="18" rx="4" fill="#22d3ee" opacity=".7"/>
+        <rect x="150" y="70" width="150" height="18" rx="4" fill="#22d3ee" opacity=".7"/>
+        <rect x="240" y="100" width="180" height="18" rx="4" fill="#22d3ee" opacity=".7"/>
+        <rect x="360" y="130" width="240" height="18" rx="4" fill="#38bdf8"/>
+        <rect x="540" y="160" width="180" height="18" rx="4" fill="#22d3ee" opacity=".7"/>
+        <rect x="660" y="190" width="120" height="18" rx="4" fill="#22d3ee" opacity=".7"/>
+        <rect x="90" y="220" width="720" height="18" rx="4" fill="#fbbf24" opacity=".35"/>
+      </g>
+      <text x="480" y="144" fill="#06121f" font-size="11" font-weight="700" text-anchor="middle">核心：建模开发</text>
+    </svg>
+    <div class="cap">图 4-1　6 个月试点甘特图，P2 与 P3 可并行；P3 建模是价值核心</div>
+  </div>
+
+  <h2>4.2 团队与角色（最小可行配置）</h2>
+  <table>
+    <tr><th>角色</th><th>人数</th><th>职责</th></tr>
+    <tr><td>项目经理</td><td>1</td><td>统筹、对齐、验收</td></tr>
+    <tr><td>工艺工程师（SME）</td><td>1~2</td><td>领域知识、工艺窗口、经验萃取、结果判定</td></tr>
+    <tr><td>设备工程师</td><td>1</td><td>炉子联网、传感器、接口</td></tr>
+    <tr><td>数据/算法工程师</td><td>1~2</td><td>采集、建模、系统开发</td></tr>
+    <tr><td>IT/MES 支持</td><td>1</td><td>数据库、网络、权限</td></tr>
+    <tr><td>管理层 sponsor</td><td>1</td><td>资源、决策</td></tr>
+  </table>
+
+  <h2>4.3 预算与风险预留</h2>
+  <div class="card">
+    <p>总预算建议预留 <span class="pill">10~15% 不可预见费</span>（设备改造常超预期）。</p>
+    <p>关键风险：<b style="color:var(--warn)">老设备无接口</b>、<b style="color:var(--warn)">历史数据缺失</b>、<b style="color:var(--warn)">质量标签不准</b>。</p>
+  </div>
+
+  <div class="prevnext">
+    <a href="03-goal.html">← 上一章：目的</a>
+    <a href="05-path.html">下一章：路径 →</a>
+  </div>
+</div>
+<div class="footer">回流焊 AI 工艺优化系统 · 准备性文档 v1.0</div>
+</body>
+</html>

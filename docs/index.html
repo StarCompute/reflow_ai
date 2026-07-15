@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>回流焊 AI 工艺优化系统 · 准备性文档</title>
+<style>
+  :root{
+    --bg:#0f172a; --card:#1e293b; --line:#334155; --txt:#e2e8f0; --sub:#94a3b8;
+    --accent:#38bdf8; --accent2:#22d3ee; --ok:#34d399; --warn:#fbbf24; --bad:#f87171;
+    --chip:#0ea5e9;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;background:var(--bg);color:var(--txt);line-height:1.7}
+  .hero{padding:64px 24px 48px;text-align:center;background:radial-gradient(1200px 400px at 50% -10%,rgba(56,189,248,.18),transparent)}
+  .hero h1{font-size:34px;font-weight:800;letter-spacing:.5px;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p{color:var(--sub);margin-top:14px;font-size:16px;max-width:760px;margin-left:auto;margin-right:auto}
+  .meta{margin-top:18px;color:var(--sub);font-size:13px}
+  .wrap{max-width:1100px;margin:0 auto;padding:0 24px 80px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px;margin-top:36px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;transition:.2s;position:relative;overflow:hidden}
+  .card:hover{transform:translateY(-4px);border-color:var(--accent);box-shadow:0 12px 30px rgba(0,0,0,.35)}
+  .card .num{font-size:13px;color:var(--accent);font-weight:700;letter-spacing:1px}
+  .card h3{font-size:19px;margin:8px 0 6px}
+  .card p{color:var(--sub);font-size:14px}
+  .card .go{margin-top:14px;display:inline-block;color:var(--accent);font-size:13px;font-weight:600}
+  .card .bar{position:absolute;left:0;top:0;height:4px;width:100%;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+  .section-title{margin-top:48px;font-size:20px;font-weight:700;border-left:4px solid var(--accent);padding-left:12px}
+  .footer{text-align:center;color:var(--sub);font-size:13px;padding:30px;border-top:1px solid var(--line)}
+  .pill{display:inline-block;background:rgba(56,189,248,.15);color:var(--accent);border:1px solid rgba(56,189,248,.3);border-radius:999px;padding:4px 12px;font-size:12px;margin:4px 6px 0 0}
+</style>
+</head>
+<body>
+  <div class="hero">
+    <h1>回流焊 AI 工艺参数优化系统</h1>
+    <p>准备性文档 · 用「数据 + AI」把老师傅调炉子的能力沉淀成系统，让普通人也能调出好曲线。<br>本站点包含缘起、价值、目的、计划、路径、开发、测试、实施、反馈、改进 10 个过程，小白也能看懂。</p>
+    <div class="meta">版本 v1.0 ｜ 日期 2026-07-14 ｜ 阅读时长约 20 分钟</div>
+    <div style="margin-top:18px">
+      <span class="pill">立项用</span><span class="pill">团队对齐</span><span class="pill">老板汇报</span><span class="pill">新人培训</span>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="section-title">📑 文档导航（点击进入各章节）</div>
+    <div class="grid">
+
+      <a class="card" href="01-origin.html"><div class="bar"></div>
+        <div class="num">01 / 缘起</div><h3>我们为什么要做</h3>
+        <p>现状痛点、行业背景，用大白话讲清"老师傅难招、质量靠人波动大"的问题。</p>
+        <span class="go">进入 →</span></a>
+
+      <a class="card" href="02-value.html"><div class="bar"></div>
+        <div class="num">02 / 价值</div><h3>能省/赚多少钱</h3>
+        <p>用一家中型工厂示例算账：返修成本、换线损耗、投入回收周期。</p>
+        <span class="go">进入 →</span></a>
+
+      <a class="card" href="03-goal.html"><div class="bar"></div>
+        <div class="num">03 / 目的</div><h3>可量化目标</h3>
+        <p>试点/中期/远期三阶段 SMART 目标，含采纳率、返修率等硬指标。</p>
+        <span class="go">进入 →</span></a>
+
+      <a class="card" href="04-plan.html"><div class="bar"></div>
+        <div class="num">04 / 计划</div><h3>谁·何时·交什么</h3>
+        <p>6 个月时间表、团队角色配置、预算与风险预留。</p>
+        <span class="go">进入 →</span></a>
+
+      <a class="card" href="05-path.html"><div class="bar"></div>
+        <div class="num">05 / 路径</div><h3>技术演进 5 步</h3>
+        <p>数据化→建模→辅助推荐→闭环自动→数字孪生，逐级演进不冒进。</p>
+        <span class="go">进入 →</span></a>
+
+      <a class="card" href="06-dev.html"><div class="bar"></div>
+        <div class="num">06 / 开发</div><h3>系统怎么搭</h3>
+        <p>四层架构、数据表设计、曲线特征、三个核心模型、技术栈。</p>
+        <span class="go">进入 →</span></a>
+
+      <a class="card" href="07-test.html"><div class="bar"></div>
+        <div class="num">07 / 测试</div><h3>怎么证明有用</h3>
+        <p>离线回测、A/B 对比、安全测试、可用性测试及验收线。</p>
+        <span class="go">进入 →</span></a>
+
+      <a class="card" href="08-implement.html"><div class="bar"></div>
+        <div class="num">08 / 实施</div><h3>怎么上线不翻车</h3>
+        <p>影子模式→确认模式、变更管理、权限与安全。</p>
+        <span class="go">进入 →</span></a>
+
+      <a class="card" href="09-feedback.html"><div class="bar"></div>
+        <div class="num">09 / 反馈</div><h3>上线看什么</h3>
+        <p>每日看板核心指标、预警线、工艺员反馈渠道。</p>
+        <span class="go">进入 →</span></a>
+
+      <a class="card" href="10-improve.html"><div class="bar"></div>
+        <div class="num">10 / 改进</div><h3>越用越聪明</h3>
+        <p>迭代机制、数据飞轮、常见改进方向。</p>
+        <span class="go">进入 →</span></a>
+
+    </div>
+
+    <div class="section-title">🚀 快速入口</div>
+    <div class="grid">
+      <a class="card" href="prototype.html"><div class="bar"></div>
+        <div class="num">▶ 产品原型</div><h3>可点击演示</h3>
+        <p>6 个真实 HTML 界面原型：辅助推荐、数据源接入、模型训练、监控看板、知识库问答、质量反馈，可切换并交互。</p>
+        <span class="go">打开原型 →</span></a>
+      <a class="card" href="tech-design-v2.html" style="border-color:var(--accent);box-shadow:0 0 20px rgba(56,189,248,.12)"><div class="bar"></div>
+        <div class="num">📐 技术方案 V2<span class="tag t-ok" style="margin-left:8px">NEW</span></div><h3>工程深度版</h3>
+        <p>含 SQL DDL、完整 API Schema、部署拓扑、生产级算法实现、监控与 CI/CD 工作流。4 表·3 模型·9 API·9 月工期。</p>
+        <span class="go">查看方案 V2 →</span></a>
+      <a class="card" href="tech-design.html"><div class="bar"></div>
+        <div class="num">📐 技术方案 V1</div><h3>简明版（旧）</h3>
+        <p>快速概览用。建议优先看 V2。</p>
+        <span class="go">查看 V1 →</span></a>
+    </div>
+
+    <div class="section-title">🧭 导读（30 秒看懂）</div>
+    <div class="card" style="margin-top:16px">
+      <p style="color:var(--txt)">回流焊炉有 7~10 个温区，老师傅要调每个温区温度、链速、风量，调出的"炉温曲线"决定焊点好坏。目前靠人，<b style="color:var(--warn)">难招、波动大、换线慢、经验随人走</b>。本项目用<b style="color:var(--ok)">数据 + AI</b> 把这套能力做成系统：记录数据 → 建模预测缺陷 → 给新板推荐参数 → 人确认下发 → 持续迭代。先从"辅助推荐"做起，不一步到位全自动。</p>
+    <p style="color:var(--sub);margin-top:10px">📊 全文含 <b style="color:var(--accent)">16 张示意图</b>（炉温曲线、四层架构、数据追溯、甘特时间轴、演进路径、反馈闭环、数据飞轮、经验萃取流程、<b style="color:var(--accent2)">部署拓扑</b>、<b style="color:var(--accent2)">CI/CD 工作流</b>，及 <b style="color:var(--accent2)">6 张系统 UI 原型</b>：辅助推荐 / 数据源接入 / 模型训练评估 / 实时监控看板 / 知识库问答 / 质量反馈分析）。系统<b style="color:var(--ok)">不只复制老师傅，更在稳定、全局寻优、可解释、自进化上超越</b>——看不懂文字，就先看图。技术细节见 <a href="tech-design-v2.html" style="color:var(--accent);font-weight:700">技术方案 V2</a>（含完整 SQL DDL 与 API Schema）。</p>
+    </div>
+
+    <div class="section-title">🧩 补充资料（常被忽略但关键）</div>
+    <div class="grid">
+      <a class="card" href="11-glossary.html"><div class="bar"></div>
+        <div class="num">11 / 术语表</div><h3>小白也能懂</h3>
+        <p>SMT/回流焊/AI/项目 三类黑话大白话对照。</p><span class="go">进入 →</span></a>
+      <a class="card" href="12-risk.html"><div class="bar"></div>
+        <div class="num">12 / 风险登记</div><h3>等级+缓解</h3>
+        <p>12 项风险量化等级、责任人、缓解措施。</p><span class="go">进入 →</span></a>
+      <a class="card" href="13-wbs.html"><div class="bar"></div>
+        <div class="num">13 / WBS·RACI</div><h3>谁干什么</h3>
+        <p>任务分解清单 + 责任矩阵，落地不扯皮。</p><span class="go">进入 →</span></a>
+      <a class="card" href="14-datadict.html"><div class="bar"></div>
+        <div class="num">14 / 数据字典</div><h3>开发直接用</h3>
+        <p>字段级类型/范围/来源/必填，照此建表。</p><span class="go">进入 →</span></a>
+      <a class="card" href="data-algo-checklist.html" style="border-color:var(--ok);box-shadow:0 0 18px rgba(52,211,153,.12)"><div class="bar"></div>
+        <div class="num">📋 采集&算法清单<span class="tag t-ok" style="margin-left:8px">NEW</span></div><h3>V2 配套交付</h3>
+        <p>9 大数据源采集矩阵 + 质量红线 + 实施勾选；3 个核心模型算法逻辑清单 + 验收指标。可直接交采集/算法团队。</p><span class="go">打开清单 →</span></a>
+      <a class="card" href="15-pilot.html"><div class="bar"></div>
+        <div class="num">15 / 试点·选型</div><h3>选错全盘输</h3>
+        <p>试点选择标准 + 自建/采购对比 + 供应商清单。</p><span class="go">进入 →</span></a>
+      <a class="card" href="16-training.html"><div class="bar"></div>
+        <div class="num">16 / 培训·FAQ</div><h3>人愿用会用</h3>
+        <p>分层培训计划 + 老板/工人/IT 质疑应答。</p><span class="go">进入 →</span></a>
+      <a class="card" href="17-acceptance.html"><div class="bar"></div>
+        <div class="num">17 / 验收·立项</div><h3>给老板拍板</h3>
+        <p>验收标准总表 + 一页纸立项书 + 结案清单。</p><span class="go">进入 →</span></a>
+      <a class="card" href="reflow_ai/README.md" style="border-color:var(--purple);box-shadow:0 0 18px rgba(167,139,250,.12)"><div class="bar"></div>
+        <div class="num">💻 代码实现<span class="tag t-info" style="margin-left:8px">V2 配套</span></div><h3>可运行工程</h3>
+        <p><code>reflow_ai/</code> 完整 Python 工程：数据层→特征→三模型→API→反馈。README 含结构与端到端运行说明。</p><span class="go">查看代码说明 →</span></a>
+    </div>
+  </div>
+
+  <div class="footer">回流焊 AI 工艺优化系统 · 准备性文档 v1.0 ｜ 内部资料，仅供项目使用</div>
+</body>
+</html>

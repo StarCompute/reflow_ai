@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>回流焊 AI 工艺优化 · 算法思路详解（小白版）</title>
+<style>
+  :root{
+    --bg:#0f1220; --panel:#171b2e; --panel2:#1f2540; --ink:#e8ecf8; --sub:#9aa3c7;
+    --orange:#ff8a3d; --orange2:#ffb877; --blue:#5b8cff; --green:#36d399; --red:#ff5d6c;
+    --line:#2c3354; --chip:#262d4d;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:radial-gradient(1200px 600px at 80% -10%,#1c2b4d 0,transparent 60%),var(--bg);
+    color:var(--ink);font-family:"PingFang SC","Microsoft YaHei",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    line-height:1.75;font-size:16px}
+  a{color:var(--blue);text-decoration:none}
+  .wrap{max-width:980px;margin:0 auto;padding:0 20px 80px}
+  header.hero{padding:64px 20px 40px;text-align:center;
+    background:linear-gradient(180deg,#1a1f38,#0f1220);border-bottom:1px solid var(--line)}
+  header.hero h1{font-size:34px;margin:0 0 10px;letter-spacing:.5px}
+  header.hero .tag{display:inline-block;background:var(--chip);color:var(--orange2);
+    padding:4px 12px;border-radius:999px;font-size:13px;margin:6px}
+  header.hero p{color:var(--sub);max-width:720px;margin:14px auto 0}
+  nav.toc{position:sticky;top:0;z-index:20;background:rgba(15,18,32,.92);backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);padding:10px 0}
+  nav.toc .inner{max-width:980px;margin:0 auto;display:flex;gap:8px;flex-wrap:wrap;padding:0 20px}
+  nav.toc a{font-size:13px;color:var(--sub);padding:6px 10px;border-radius:8px}
+  nav.toc a:hover{background:var(--chip);color:var(--ink)}
+  section{margin-top:46px}
+  h2{font-size:24px;border-left:4px solid var(--orange);padding-left:12px;margin:0 0 14px}
+  h3{font-size:18px;color:var(--orange2);margin:22px 0 8px}
+  p{color:#d7ddf2}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:14px 0}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:720px){.grid2{grid-template-columns:1fr}}
+  .callout{border-radius:12px;padding:14px 16px;margin:14px 0;border:1px dashed var(--line);background:var(--panel2)}
+  .callout.tip{border-color:var(--green);background:rgba(54,211,153,.08)}
+  .callout.warn{border-color:var(--red);background:rgba(255,93,108,.08)}
+  .callout.analogy{border-color:var(--orange);background:rgba(255,138,61,.08)}
+  .k{color:var(--orange2);font-weight:600}
+  code{background:var(--chip);padding:2px 6px;border-radius:6px;font-size:13.5px;color:#ffe0c4;
+    font-family:"JetBrains Mono",Consolas,monospace}
+  pre{background:#0c0f1c;border:1px solid var(--line);border-radius:12px;padding:14px 16px;overflow:auto;
+    font-size:13px;line-height:1.6;color:#cfe0ff;font-family:"JetBrains Mono",Consolas,monospace}
+  pre .c{color:#6f7aa8} pre .o{color:var(--orange2)} pre .b{color:var(--blue)} pre .g{color:var(--green)}
+  /* flow diagram */
+  .flow{display:flex;align-items:stretch;gap:0;flex-wrap:nowrap;overflow-x:auto;padding:6px 0}
+  .flow .step{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;
+    min-width:128px;flex:1;text-align:center}
+  .flow .step .n{display:inline-block;width:26px;height:26px;line-height:26px;border-radius:50%;
+    background:var(--orange);color:#1a1205;font-weight:700;margin-bottom:6px}
+  .flow .step .t{font-size:13.5px;color:var(--ink)}
+  .flow .arrow{display:flex;align-items:center;color:var(--sub);padding:0 6px;font-size:20px}
+  @media(max-width:720px){.flow .step{min-width:110px}}
+  /* model tabs */
+  .tabs{display:flex;gap:8px;margin:10px 0}
+  .tabs button{flex:1;background:var(--panel);color:var(--sub);border:1px solid var(--line);
+    border-radius:10px;padding:10px;cursor:pointer;font-size:14px;font-weight:600}
+  .tabs button.active{background:linear-gradient(180deg,var(--orange),#e9742c);color:#1a1205;border-color:transparent}
+  .tabpane{display:none}
+  .tabpane.active{display:block;animation:fade .3s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  /* defect chips */
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+  .chip{background:var(--chip);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:13px}
+  .chip b{color:var(--orange2)}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left}
+  th{background:var(--panel2);color:var(--orange2)}
+  .ok{color:var(--green)} .bad{color:var(--red)}
+  details{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:4px 16px;margin:10px 0}
+  summary{cursor:pointer;font-weight:600;padding:10px 0;color:var(--orange2)}
+  footer{margin-top:60px;text-align:center;color:var(--sub);font-size:13px}
+  .pill{display:inline-block;background:var(--chip);border-radius:8px;padding:2px 8px;font-size:12px;color:var(--sub);margin:2px}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <h1>🔥 回流焊 AI 工艺优化 · 算法思路详解</h1>
+  <div>
+    <span class="tag">面向小白</span>
+    <span class="tag">生活比喻</span>
+    <span class="tag">三大算法</span>
+    <span class="tag">配套代码可跑</span>
+  </div>
+  <p>把"设定炉温 → 预测曲线 → 判断良率 → 推荐最优参数"这套 AI 系统，用大白话讲清楚：
+  它到底在解决什么问题、里面每个算法像生活中的什么、以及代码里是怎么落地的。</p>
+</header>
+
+<nav class="toc">
+  <div class="inner">
+    <a href="#what">1. 这是什么</a>
+    <a href="#analogy">2. 生活比喻</a>
+    <a href="#flow">3. 整体流程</a>
+    <a href="#models">4. 三大算法</a>
+    <a href="#redline">5. 质量红线</a>
+    <a href="#metrics">6. 验收指标</a>
+    <a href="#twowin">7. 两套窗口</a>
+    <a href="#run">8. 怎么跑</a>
+    <a href="#dict">9. 名词词典</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+<!-- 1 -->
+<section id="what">
+  <h2>1. 这系统到底在干什么？</h2>
+  <div class="card">
+    <p><span class="k">回流焊（Reflow）</span>是电子厂给电路板"焊锡"的工序：把贴好零件的 PCB 板送进一条长长的高温炉子，
+    炉子分 10 个温区，每个区设一个温度，再配上一条传送链的<span class="k">链速</span>（板子走多快）。
+    温度曲线像"先预热 → 再均热 → 冲到峰值熔化焊锡 → 冷却定型"。</p>
+    <p>曲线长得好不好，直接决定焊点有没有缺陷：温度不够会<span class="k">虚焊</span>（没粘牢），
+    太高会<span class="k">桥连</span>（相邻脚短路），受热不均会<span class="k">立碑</span>（零件翘起来）……</p>
+    <p>过去这些温区温度、链速全靠<span class="k">老师傅凭经验调</span>。本系统用 AI 做三件事：</p>
+    <div class="chips">
+      <span class="chip"><b>① 代理模型</b>：输入温区设定 → 预测出炉温曲线</span>
+      <span class="chip"><b>② 质量模型</b>：看曲线 → 预测 5 类缺陷概率/良率</span>
+      <span class="chip"><b>③ 推荐引擎</b>：给新板 → 搜出最优温区+链速</span>
+    </div>
+  </div>
+</section>
+
+<!-- 2 -->
+<section id="analogy">
+  <h2>2. 一个生活比喻：做蛋糕</h2>
+  <div class="callout analogy">
+    <p>把回流焊想成 <span class="k">用烤箱做蛋糕</span>：</p>
+    <ul>
+      <li><b>温区设定 + 链速</b> = 你设定的"烤箱各段温度 + 烤多久"（这就是<b>旋钮/参数</b>）。</li>
+      <li><b>出炉的炉温曲线</b> = 蛋糕在烤箱里"实际经历的温度变化"。</li>
+      <li><b>缺陷（虚焊/桥连…）</b> = 蛋糕"塌了 / 焦了 / 没熟"。</li>
+      <li><b>代理模型</b> = 一个"烤箱模拟器"：你告诉它旋钮怎么拧，它算出蛋糕会经历什么温度。</li>
+      <li><b>质量模型</b> = 一个"品控师傅"：看温度曲线，判断蛋糕会不会出问题、成功率多少。</li>
+      <li><b>推荐引擎</b> = 一个"智能助手"：你说"我要做 8 寸芝士蛋糕"，它自动帮你把旋钮调到最稳的组合。</li>
+    </ul>
+    <p>下面所有算法，本质都是围绕"旋钮 → 温度曲线 → 好不好"这条链路在转。</p>
+  </div>
+</section>
+
+<!-- 3 -->
+<section id="flow">
+  <h2>3. 整体流程图</h2>
+  <p>数据从左边进来，一路被"校验 → 学模型 → 评估 → 推荐 → 人确认 → 反馈"，形成一个越转越准的飞轮：</p>
+  <div class="flow">
+    <div class="step"><div class="n">1</div><div class="t">质量红线<br>校验</div></div>
+    <div class="arrow">➜</div>
+    <div class="step"><div class="n">2</div><div class="t">特征工程<br>曲线→数字</div></div>
+    <div class="arrow">➜</div>
+    <div class="step"><div class="n">3</div><div class="t">训练<br>三个模型</div></div>
+    <div class="arrow">➜</div>
+    <div class="step"><div class="n">4</div><div class="t">评估<br>验收指标</div></div>
+    <div class="arrow">➜</div>
+    <div class="step"><div class="n">5</div><div class="t">推荐<br>Top-3</div></div>
+    <div class="arrow">➜</div>
+    <div class="step"><div class="n">6</div><div class="t">人确认下发<br>安全网关</div></div>
+    <div class="arrow">➜</div>
+    <div class="step"><div class="n">7</div><div class="t">质量反馈<br>回灌重训</div></div>
+  </div>
+  <div class="callout tip">
+    <p><b>一句话记忆：</b>先"体检"数据（红线）→ 把曲线"翻译"成数字（特征）→ 训练三个 AI（代理/质量/推荐）→
+    考试验收（指标）→ 出方案（推荐）→ 老师傅拍板才下发（安全网关）→ 实际结果再喂回去（飞轮）。</p>
+  </div>
+</section>
+
+<!-- 4 -->
+<section id="models">
+  <h2>4. 三大算法逐个拆（小白版）</h2>
+  <p>点下面的标签切换。每个算法都按"它像什么 → 解决啥 → 怎么做 → 代码在哪"四步讲。</p>
+
+  <div class="tabs">
+    <button class="active" data-tab="m1">① 代理模型</button>
+    <button data-tab="m2">② 质量模型</button>
+    <button data-tab="m3">③ 推荐引擎</button>
+  </div>
+
+  <!-- 模型1 -->
+  <div class="tabpane active" id="m1">
+    <div class="card">
+      <h3>像什么？</h3>
+      <p>一个 <span class="k">"烤箱模拟器"</span>。你告诉它 10 个温区设多少度、链速多少，它立刻算出板子会经历的一条温度曲线（6 个测温点各一条）。</p>
+      <h3>解决啥问题？</h3>
+      <p>真实炉子每次实测曲线要等板子真的过炉才知道，太慢。代理模型让你<span class="k">不用真烧一遍</span>就能"脑补"出曲线，供后面判断良率、做安全校验用。</p>
+      <h3>怎么做？（物理 + AI 残差 = PINN 思路）</h3>
+      <p>它分两层，这是关键巧思：</p>
+      <ul>
+        <li><b>第一层·物理基线</b>：用一条简单的"一阶滞后"公式，把温区设定平滑插值得目标曲线，再让每个测温点按自己的"热惯性"慢慢追上目标。
+          这保证了<b>物理上说得通</b>（不会算出反常识的曲线），且<b>不需要数据就能跑</b>。</li>
+        <li><b>第二层·AI 残差</b>：真实炉子和理想公式总有偏差。用神经网络（MLP）去学"理想曲线"和"真实曲线"之间的<span class="k">残差</span>（差值），
+          预测时 <code>最终曲线 = 物理基线 + 神经网络修正</code>。这就是 <b>PINN（物理信息神经网络）</b>的简化思路：让物理当"骨架"，AI 补"血肉"。</li>
+      </ul>
+      <pre><span class="c"># models/surrogate.py（简化示意）</span>
+<span class="b">def</span> predict(setting):
+    target = 温区之间<b>平滑插值</b>          <span class="c"># 避免阶梯跳变造成假陡坡</span>
+    <span class="b">for</span> 每个测温通道 c:
+        ac = 基础滞后 × 通道差异 × 链速因子   <span class="c"># 不同位置热惯性不同→峰值有差</span>
+        ch = 一阶滞后追踪(target, ac)          <span class="c"># 物理骨架</span>
+        out[c] = ch + 通道偏移
+    <span class="b">return</span> out + 神经网络残差修正             <span class="c"># AI 补血肉</span></pre>
+      <div class="callout tip"><p><b>为什么这样稳？</b>纯神经网络容易"胡说"出物理上不可能的曲线；纯物理公式又不够准。
+      两者相加，既准又不会离谱——这也是工业 AI 的常见套路。</p></div>
+    </div>
+  </div>
+
+  <!-- 模型2 -->
+  <div class="tabpane" id="m2">
+    <div class="card">
+      <h3>像什么？</h3>
+      <p>一个 <span class="k">"品控老师傅"</span>。你把一条温度曲线（加上这块板的厚度、零件密度等信息）递给它，
+      它告诉你：<b>虚焊 / 桥连 / 立碑 / 空洞 / 锡珠</b> 这 5 种缺陷各自的概率，以及综合<span class="k">良率</span>。</p>
+      <h3>解决啥问题？</h3>
+      <p>缺陷要等板子焊完、过 AOI/X 光检测才知。质量模型让你<span class="k">看曲线就能提前预判</span>哪批板子危险，也作为推荐引擎的"打分器"。</p>
+      <h3>怎么做？（多标签分类）</h3>
+      <ul>
+        <li><b>输入（16 个数字）</b>：8 个"曲线特征"（峰值温度、液相线以上时间、升温斜率…）+ 8 个"板子信息"（板厚、铜面积、BGA 数量、锡膏型号、环境温湿度…）。</li>
+        <li><b>输出（5 个 0~1 的概率）</b>：每个缺陷"发生的可能性"。良率 = 1 − 最大缺陷概率。</li>
+        <li><b>算法</b>：演示用随机森林（RandomForest）做<span class="k">多标签</span>预测；生产可换 XGBoost。训练数据来自历史"曲线 + 实际检测结果"。</li>
+      </ul>
+      <pre><span class="c"># 输入 16 维 = 8 曲线特征 + 8 板子/环境信息</span>
+X = [峰值, 液相线时间, 升温率, 降温率, 温差ΔT, 均热温,
+     183℃以上时间, 曲线时长,
+     板厚, 铜面积, BGA数, 最大BGA, 锡膏编码, 零件密度, 环境温度, 湿度]
+<span class="c"># 输出 5 维概率</span>
+y = [虚焊P, 桥连P, 立碑P, 空洞P, 锡珠P]</pre>
+      <div class="callout warn"><p><b>演示数据的巧思：</b>为了让模型"学得会、考得出来"，演示里缺陷标签不是乱编的，
+      而是<span class="k">由"曲线是否违反工艺窗口"推导</span>——越界最严重的一项就是对应缺陷，全在窗口内就是"无"。
+      这样质量模型学到的就是"曲线→是否越界"的清晰边界，评估时 AUC 自然高。</p></div>
+    </div>
+  </div>
+
+  <!-- 模型3 -->
+  <div class="tabpane" id="m3">
+    <div class="card">
+      <h3>像什么？</h3>
+      <p>一个 <span class="k">"智能调参助手"</span>。你说"这批是新板 PCB-A12、用 SAC305 锡膏"，它自动在 11 个旋钮
+      （10 温区 + 链速）里翻找，给出 <b>Top-3 最稳的设定</b>，并附上预测良率。</p>
+      <h3>解决啥问题？</h3>
+      <p>11 个旋钮组合数天文数字，人肉试错成本极高。推荐引擎用<span class="k">贝叶斯优化</span>聪明地搜，几十次就找到好解；
+      而且<b>任何违反安全窗口的解都会被 100% 挡掉</b>。</p>
+      <h3>怎么做？（贝叶斯优化 + 硬约束）</h3>
+      <ul>
+        <li><b>代理模型当"预言机"</b>：对每个候选设定，先让①代理模型算出曲线，再让②质量模型算出缺陷概率。</li>
+        <li><b>目标函数</b>：<code>分数 = −(最大缺陷概率 + 1000 × 越界罚分)</code>。
+            贝叶斯优化要"最大化分数"，所以它会<span class="k">拼命压低缺陷概率、并且绝不越界</span>（罚分权重 1000 倍，越界代价极大）。</li>
+        <li><b>搜素策略（GP + UCB）</b>：先随机试十几次，用一个"高斯过程"模型去<b>拟合"设定↔分数"的地形</b>，
+            然后专挑"既可能高、又不确定"的点试（UCB 采集函数），越找越准。约 36 轮就收敛。</li>
+      </ul>
+      <pre><span class="c"># models/recommender.py（核心目标函数）</span>
+<span class="b">def</span> objective(**参数):
+    curve = 代理模型.predict(参数)          <span class="c"># 脑补曲线</span>
+    feat  = 提取曲线特征(curve)
+    proba = 质量模型.predict_proba(输入)     <span class="c"># 预判缺陷</span>
+    penalty = 工艺窗口.penalty(feat)        <span class="c"># 越界越多罚分越大</span>
+    <span class="b">return</span> -(proba.max() + <span class="o">1000.0</span> * penalty)   <span class="c"># 硬约束优先</span></pre>
+      <div class="callout tip"><p><b>为什么约束能满足率 100%？</b>因为目标里越界罚分被放大了 1000 倍，
+      优化器一旦发现某设定越界，分数立刻暴跌，于是它会"绕着红灯走"，最终吐出的 Top-3 必然落在安全窗口内。</p></div>
+    </div>
+  </section>
+
+<!-- 5 -->
+<section id="redline">
+  <h2>5. 数据质量红线（先体检，再训练）</h2>
+  <p>AI 吃垃圾数据就会拉垃圾结论。训练前先用 <code>data/validate.py</code> 过 8 条红线，任意一条不达标就<span class="k">阻断训练</span>：</p>
+  <table>
+    <tr><th>红线</th><th>含义</th><th>不达标会怎样</th></tr>
+    <tr><td>R1</td><td>run_id 唯一且非空</td><td class="bad">无法追溯</td></tr>
+    <tr><td>R2</td><td>每通道曲线采样点 ≥ 60</td><td class="bad">曲线太稀，特征失真</td></tr>
+    <tr><td>R3</td><td>实测峰值 − 设定峰值 ≤ 30℃</td><td class="bad">传感器/设定异常报警</td></tr>
+    <tr><td>R4</td><td>追溯率 100%（每炉次都有质量结果）</td><td class="bad">样本无标签，学不会</td></tr>
+    <tr><td>R5</td><td>end_time &gt; start_time</td><td class="bad">时间倒流，数据错</td></tr>
+    <tr><td>R6</td><td>lot_id 非空（板级追溯）</td><td class="bad">板子对不上</td></tr>
+    <tr><td>R7</td><td>defect_type 在枚举内</td><td class="bad">脏标签</td></tr>
+    <tr><td>R8</td><td>oven_id / product_id / chain_speed 必填</td><td class="bad">关键字段缺失</td></tr>
+  </table>
+  <div class="callout tip"><p>演示里这 8 条全部 <span class="ok">OK</span>，所以训练照常进行。</p></div>
+</section>
+
+<!-- 6 -->
+<section id="metrics">
+  <h2>6. 验收指标（考卷怎么打分）</h2>
+  <p>训练完用 <code>training/evaluate.py</code> 出三张"成绩单"，对照验收线：</p>
+  <div class="grid2">
+    <div class="card">
+      <h3>质量模型 · macro-AUC</h3>
+      <p>AUC 衡量"给一对好坏样本，模型能否分清"的能力，1.0 满分，0.5 等于瞎猜。</p>
+      <p><span class="pill">验收线 ≥ 0.85</span> <span class="pill">演示实测 ≈ 0.99</span></p>
+      <p>对 5 类缺陷各算一个 AUC 再取平均（macro）。演示里 5 类都能算出来（每类都有正样本）。</p>
+    </div>
+    <div class="card">
+      <h3>代理模型 · 曲线 RMSE</h3>
+      <p>预测曲线和真实曲线差多少℃（均方根误差），越小越准。</p>
+      <p><span class="pill">演示实测 ≈ 0.04℃</span></p>
+      <p>因为演示曲线本就由同一套物理公式生成，所以残差极小——这正好说明"物理骨架"立住了。</p>
+    </div>
+  </div>
+  <div class="card">
+    <h3>推荐引擎 · 约束满足率 + 平均预测良率</h3>
+    <p>把推荐出的 Top-1 设定送回代理模型算曲线、查工艺窗口：<span class="k">100% 不能越界</span>（验收线）。</p>
+    <p><span class="pill">约束满足率 演示 = 100%</span> <span class="pill">平均预测良率 ≈ 0.79</span></p>
+    <p>满足率 100% 说明安全网关那道"红灯"真的拦得住；良率 0.79 表示推荐设定预计近八成板子一次过关。</p>
+  </div>
+</section>
+
+<!-- 7 -->
+<section id="twowin">
+  <h2>7. 为什么代码里有"两套工艺窗口"？</h2>
+  <div class="grid2">
+    <div class="card">
+      <h3><span class="k">process_window</span>（生产规范）</h3>
+      <p>来自技术文档 V2 §7 的<span class="k">真实行业标准</span>：峰值∈[235,250]℃、升温 1~3℃/s……</p>
+      <p>用在 <b>API 安全网关 /dispatch</b>：任何要下发给真炉子的设定，先用代理模型算曲线、查这个窗口，<b>越界 100% 拦截</b>并写审计日志。</p>
+    </div>
+    <div class="card">
+      <h3><span class="k">demo_window</span>（演示窗口）</h3>
+      <p>本仓库的<span class="k">玩具物理模型</span>还造不出完全符合真实规范的曲线，所以单独设一套"它力所能及"的窗口。</p>
+      <p>演示造数（缺陷标签）和推荐引擎约束都用它，保证<b>演示能自洽跑通</b>。等接入真实数据和真实物理后，训练和推荐统一改用 process_window。</p>
+    </div>
+  </div>
+  <div class="callout warn"><p><b>一句话：</b>process_window 是"考卷标准答案"，demo_window 是"练习册难度"——先把练习做顺，再上真考卷。</p></div>
+</section>
+
+<!-- 8 -->
+<section id="run">
+  <h2>8. 怎么跑起来看效果</h2>
+  <pre><span class="c"># 进目录、装依赖（轻量：numpy / scikit-learn / sqlalchemy / fastapi）</span>
+cd reflow_ai
+pip install -r requirements.txt
+
+<span class="c"># 端到端演示：自动造『工艺相关』数据 → 红线校验 → 训三模型 → 评估 → 推荐 → 反馈</span>
+python demo.py
+
+<span class="c"># 单元测试（8 个用例）</span>
+pip install pytest
+pytest tests/ -q
+
+<span class="c"># 启动 API（另开终端），浏览器打开 http://127.0.0.1:8000/docs 可交互试</span>
+uvicorn api.main:app --reload --port 8000</pre>
+  <div class="callout tip"><p>跑 <code>python demo.py</code> 后，日志里会打印：红线 R1–R8 全 OK、质量模型 macro-AUC≈0.99、
+  推荐约束满足率 100%、Top-3 设定及预测良率——这就是上面所有算法一起工作的成果。</p></div>
+</section>
+
+<!-- 9 -->
+<section id="dict">
+  <h2>9. 名词小词典</h2>
+  <details><summary>代理模型 / Surrogate</summary><p>用"设定值"预测"出炉温度曲线"的模型。这里 = 物理公式 + 神经网络残差。</p></details>
+  <details><summary>质量模型 / Quality</summary><p>看曲线预判 5 类缺陷概率与良率的模型（多标签分类）。</p></details>
+  <details><summary>推荐引擎 / Recommender</summary><p>用贝叶斯优化在 11 维参数空间里搜最优温区+链速的模型。</p></details>
+  <details><summary>贝叶斯优化 / Bayesian Optimization</summary><p>一种"用尽量少的试错找到最优解"的方法：边试边建概率模型猜测地形，专挑有潜力的点试。</p></details>
+  <details><summary>GP + UCB</summary><p>高斯过程（Gaussian Process）当"地形预言机"，UCB（上置信界）当"下一步试哪"的策略。</p></details>
+  <details><summary>AUC</summary><p>衡量二分类能力的指标，0.5=瞎猜，1.0=完美。macro-AUC = 各类别 AUC 的平均。</p></details>
+  <details><summary>PINN</summary><p>物理信息神经网络：把物理规律当约束融进神经网络，既准又不胡说。本系统用"物理基线+残差"简化实现。</p></details>
+  <details><summary>工艺窗口 / Process Window</summary><p>一组"曲线特征必须落在的范围"，越界就意味着焊点高风险。是安全红线的量化版。</p></details>
+  <details><summary>数据飞轮</summary><p>推荐→下发→实际质量结果→回灌重训→模型更准→再推荐，越转越聪明的闭环。</p></details>
+</section>
+
+<footer>
+  回流焊 AI 工艺优化系统 · 算法思路详解（小白版） ｜ 配套代码见 <code>reflow_ai/</code> 各模块 ｜ 与 <code>docs/tech-design-v2.html</code> 技术方案对应
+</footer>
+
+</div>
+
+<script>
+  // Tab 切换
+  const tabs = document.querySelectorAll('.tabs button');
+  const panes = document.querySelectorAll('.tabpane');
+  tabs.forEach(btn=>btn.addEventListener('click',()=>{
+    tabs.forEach(b=>b.classList.remove('active'));
+    panes.forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).classList.add('active');
+  }));
+</script>
+</body>
+</html>
